@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "homepage": "https://prochorz.github.io/vue-easy-pull-refresh/",
   "repository": {
     "type": "git",
     "url": "https://github.com/prochorz/vue-easy-pull-refresh"
