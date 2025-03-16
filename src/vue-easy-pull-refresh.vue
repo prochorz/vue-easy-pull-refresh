@@ -102,7 +102,7 @@ const classLeave = computed(() => {
 const classEnter = computed(() => {
     return [
         classes.refreshEnter,
-        props.isAppearAnimation ? classes.refreshEFadenter : null
+        props.isAppearAnimation ? classes.refreshFadeEnter : null
     ].join(" ");
 });
 
@@ -231,7 +231,7 @@ defineExpose({ queue });
     animation-name: fadeLeave;
 }
 
-.refreshEFadenter {
+.refreshFadeEnter {
     animation-name: fadeEnter;
 }
 </style>
