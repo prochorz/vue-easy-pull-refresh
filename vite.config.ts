@@ -10,7 +10,7 @@ export default defineConfig({
       entry: './src/index.ts',
       name: 'VueEasyPullRefresh',
       fileName: (format) => `vue-easy-pull-refresh.${format}.js`,
-      formats: ['es', 'cjs', 'umd']
+      formats: ['es', 'umd']
     },
     rollupOptions: {
       external: ['vue'],
@@ -26,7 +26,10 @@ export default defineConfig({
     vue(),
     cssInjectedByJsPlugin(),
     dts({
+      cleanVueFileName: true,
       tsconfigPath: "./tsconfig.app.json",
+      // include: ['./src/index.ts'],
+      insertTypesEntry: true,
     })
   ],
 })
