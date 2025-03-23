@@ -31,7 +31,7 @@ One of the powerful features of `useEasyPullRefresh` is the ability to queue mul
 
 - When the pull-to-refresh gesture is triggered, all tasks in the queue are executed.
 - The queue ensures that tasks are not skipped, and each task will be given time to complete.
-- If a task fails or takes too long, the refresh will continue to wait until the task resolves.
+- If a task takes too long, the refresh will keep waiting until the task is either resolved or rejected.
 
 ### 4. **Controlled vs. Uncontrolled Refresh**
 
