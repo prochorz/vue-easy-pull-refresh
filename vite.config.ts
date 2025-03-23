@@ -22,13 +22,17 @@ export default defineConfig({
       },
     }
   },
+  css: {
+    modules: {
+      generateScopedName: '[hash:base64:5]'
+    }
+  },
   plugins: [
     vue(),
     cssInjectedByJsPlugin(),
     dts({
       cleanVueFileName: true,
       tsconfigPath: "./tsconfig.app.json",
-      // include: ['./src/index.ts'],
       insertTypesEntry: true,
     })
   ],

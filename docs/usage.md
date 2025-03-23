@@ -55,7 +55,7 @@ Combine `is-controled` with `useEasyPullRefresh` to queue async requests during 
 ::: info Preview
 <ClientOnly>
     <VueEasyPullRefresh :is-controled="true">
-        <TestScreenFetch />
+        <TestFetch />
     </VueEasyPullRefresh>
 </ClientOnly>
 :::

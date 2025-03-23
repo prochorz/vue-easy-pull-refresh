@@ -68,7 +68,7 @@ pullDownQueueAdd(someRequest2);
 someRequest();
 </script>
 
-<style scoped lang="scss">
+<style scoped>
     .test-screen {
         color: black;
         height: 300px;
