@@ -58,10 +58,10 @@ function requestOne() {
 }
 
 function requestTwo() {
+    isLoadingTwo.value = true;
+
     return new Promise(resolve => {
         setTimeout(() => {
-            isLoadingTwo.value = true;
-
             setTimeout(() => {
                 listTwo.value = getRandomList();
                 isLoadingTwo.value = false;
