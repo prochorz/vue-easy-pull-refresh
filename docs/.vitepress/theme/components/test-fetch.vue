@@ -106,6 +106,10 @@ requestTwo();
         transform: translate(-50%, -50%);
     }
 
+    .test-screen ul {
+        list-style: none;
+    }
+
     .test-screen li {
         background: wheat;
         padding: 2px 6px;
