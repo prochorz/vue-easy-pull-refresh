@@ -1,13 +1,14 @@
 <template>
     <div
+        ref="refEl"
         :class="classes.container"
         @touchstart="touchStartHandler"
-        @touchmove="touchMoveHandler"
+        @touchmove="preventedTouchMoveHandler"
         @touchend="touchEndHandler"
         @mousedown="touchStartHandler"
         @mouseup="touchEndHandler"
         @mouseleave="touchEndHandler"
-        @mousemove="touchMoveHandler"
+        @mousemove="preventedTouchMoveHandler"
     >
         <div
             v-if="isLoaderExist"
@@ -41,6 +42,8 @@ import {
 } from 'vue';
 
 import { useProvide } from './use-context';
+import { getScrollParents } from './utils';
+import useResizeObserver from './use-resize-observer';
 
 defineOptions({ name: 'VueEasyPullRefresh' });
 
@@ -90,6 +93,9 @@ const {
     touchStartHandler
 } = useProvide(props);
 const classes = useCssModule();
+const { refEl, height } = useResizeObserver();
+
+let scrollParents: HTMLElement[] = [];
 
 const uniqKey = shallowRef();
 const isGoingUp = shallowRef(false);
@@ -117,6 +123,39 @@ const contentStyle = computed(() => ({
 }));
 const loaderStyle = computed(() => ({ maxHeight: `${topOffset.value}px` }));
 
+function updateKey() {
+    if (isRefreshing.value) {
+        uniqKey.value = Date.now();
+    }
+}
+
+function updateScrollParents() {
+    scrollParents = getScrollParents(refEl.value);
+}
+
+function preventScrollParents() {
+    if (scrollParents.length) {
+        const stopScrolling = topOffset.value && !isRefreshing.value;
+
+        scrollParents.forEach(p => {
+            if (stopScrolling) {
+                p.style.overflow = 'hidden';
+            } else {
+                p.style.removeProperty('overflow');
+            }
+        });
+    }
+}
+
+function preventedTouchMoveHandler(e: TouchEvent | MouseEvent) {
+    const isScrollParentsTop = scrollParents.length && !scrollParents[0].scrollTop;
+    const isParentsTop = !scrollParents.length && !refEl.value.parentElement?.scrollTop;
+    
+    if (isScrollParentsTop || isParentsTop) {
+        touchMoveHandler(e);
+    }
+}
+
 function loaderEndHandler() {
     if (isGoingUp.value) {
         isGoingUp.value = false;
@@ -135,13 +174,10 @@ function topOffsetUpdate(newVal: number, oldVal: number) {
     }
 };
 
-watch(isRefreshing, () => {
-    if (isRefreshing.value) {
-        uniqKey.value = Date.now();
-    }
-});
-
+watch(isRefreshing, updateKey);
 watch(topOffset, topOffsetUpdate);
+watch(height, updateScrollParents);
+watch([topOffset, isRefreshing], preventScrollParents);
 
 defineExpose({ queue });
 </script>

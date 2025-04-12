@@ -90,6 +90,8 @@ requestTwo();
     }
 
     .test-screen ul {
+        margin: 0;
+        padding: 6px;
         list-style: none;
     }
 

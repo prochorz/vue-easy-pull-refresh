@@ -108,6 +108,8 @@ requestTwo();
 
     .test-screen ul {
         list-style: none;
+        margin: 0;
+        padding: 6px;
     }
 
     .test-screen li {
