@@ -19,9 +19,9 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "publish-patch": "npm run build && npm version patch && git push --tags git push && npm publish --registry https://registry.npmjs.org",
-    "publish-minor": "npm run build && npm version minor && git push --tags git push && npm publish --registry https://registry.npmjs.org",
-    "publish-major": "npm run build && npm version major && git push --tags git push && npm publish --registry https://registry.npmjs.org"
+    "publish-patch": "npm run build && npm version patch && git push --tags && git push && npm publish --registry https://registry.npmjs.org",
+    "publish-minor": "npm run build && npm version minor && git push --tags && git push && npm publish --registry https://registry.npmjs.org",
+    "publish-major": "npm run build && npm version major && git push --tags && git push && npm publish --registry https://registry.npmjs.org"
   },
   "peerDependencies": {
     "vue": ">=3.0.0"
