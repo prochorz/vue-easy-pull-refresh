@@ -48,9 +48,19 @@ This is the simplify template of the `<VueEasyPullRefresh>`. It will be helpful 
 (e: 'reached'): void:
 ```
 
+### **`settled`**
+- **Type**: `Event`
+- **Description**: This event is emitted when the refresh animation is fully completed and the component has returned to its idle state. Useful for triggering actions that require the UI to be stable again.
+```ts
+(e: 'settled'): void:
+```
+
 ### Example Usage:
 ```vue
-<VuePullToRefresh @reached="handleRefresh" />
+<VuePullToRefresh
+   @reached="handleRefresh"
+   @settled="handleSettled"
+/>
 ```
 
 ## Slots

@@ -46,6 +46,7 @@ import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 ## Slots
 
 - **`loader`**: Customize the loading indicator shown during refresh. If not provided, a default loader will be used.
+- **`settled`**: Emitted when the refresh animation is fully completed and the component has returned to its idle state.
 
 ## Usage with `useEasyPullRefresh`
 

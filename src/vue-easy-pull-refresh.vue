@@ -80,6 +80,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits({
+    settled: null,
     reached: null
 });
 
@@ -159,6 +160,10 @@ function preventedTouchMoveHandler(e: TouchEvent | MouseEvent) {
 function loaderEndHandler() {
     if (isGoingUp.value) {
         isGoingUp.value = false;
+        /**
+         * Emitted when the refresh animation is fully completed and the UI is idle.
+         */
+         emit('settled');
     }
 }
 
