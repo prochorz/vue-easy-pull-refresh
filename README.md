@@ -42,11 +42,11 @@ import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 ## Events
 
 - **`reached`**: Emitted when the pull-to-refresh threshold is reached and the refresh process begins.
+- **`settled`**: Emitted when the refresh animation is fully completed and the component has returned to its idle state.
 
 ## Slots
 
 - **`loader`**: Customize the loading indicator shown during refresh. If not provided, a default loader will be used.
-- **`settled`**: Emitted when the refresh animation is fully completed and the component has returned to its idle state.
 
 ## Usage with `useEasyPullRefresh`
 
