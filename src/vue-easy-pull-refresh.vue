@@ -2,10 +2,10 @@
     <div
         ref="refEl"
         :class="classes.container"
-        @touchstart="touchStartHandler"
+        @touchstart="readyTouchStartHandler"
         @touchmove="preventedTouchMoveHandler"
         @touchend="touchEndHandler"
-        @mousedown="touchStartHandler"
+        @mousedown="readyTouchStartHandler"
         @mouseup="touchEndHandler"
         @mouseleave="touchEndHandler"
         @mousemove="preventedTouchMoveHandler"
@@ -23,7 +23,6 @@
         <slot v-if="isControled" />
         <transition
             v-else
-            :appear="false"
             :enter-active-class="classEnter"
             :leave-active-class="classLeave"
             @after-leave="refreshEnd"
@@ -37,6 +36,7 @@
 import {
     watch,
     computed,
+    nextTick,
     shallowRef,
     useCssModule
 } from 'vue';
@@ -99,17 +99,26 @@ const { refEl, height } = useResizeObserver();
 let scrollParents: HTMLElement[] = [];
 
 const uniqKey = shallowRef();
+const isReady = shallowRef(false);
 const isGoingUp = shallowRef(false);
 
 const isLoaderExist = computed(() => !props.isDisabled && (isGoingUp.value || topOffset.value));
 
 const classLeave = computed(() => {
+    if (!isReady.value) {
+        return "";
+    }
+
     return [
         classes.refreshLeave,
         props.isAppearAnimation ? classes.refreshFadeLeave : null
     ].join(" ");
 });
 const classEnter = computed(() => {
+    if (!isReady.value) {
+        return "";
+    }
+
     return [
         classes.refreshEnter,
         props.isAppearAnimation ? classes.refreshFadeEnter : null
@@ -124,8 +133,9 @@ const contentStyle = computed(() => ({
 }));
 const loaderStyle = computed(() => ({ maxHeight: `${topOffset.value}px` }));
 
-function updateKey() {
+async function updateKey() {
     if (isRefreshing.value) {
+        await nextTick();
         uniqKey.value = Date.now();
     }
 }
@@ -146,6 +156,12 @@ function preventScrollParents() {
             }
         });
     }
+}
+
+function readyTouchStartHandler(e: TouchEvent | MouseEvent) {
+    isReady.value = true;
+
+    touchStartHandler(e);
 }
 
 function preventedTouchMoveHandler(e: TouchEvent | MouseEvent) {
