@@ -27,7 +27,7 @@ export function getScrollParents (el?: Element | null, stopAt?: Element | null) 
     return elements;
 }
 
-export function debounce(callback: (...args: Array<any>) => void, wait = 150) {
+export function debounce(callback: (...args: Array<unknown>) => void, wait = 150) {
     let timeoutId: ReturnType<typeof setTimeout>;
 
     return new Proxy(callback, {

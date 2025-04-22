@@ -33,11 +33,14 @@
 </template>
 
 <script setup lang="ts">
+import type { IPullRefreshProps } from './index.types';
+
 import {
     watch,
     computed,
     nextTick,
     shallowRef,
+    withDefaults,
     useCssModule
 } from 'vue';
 
@@ -47,36 +50,11 @@ import useResizeObserver from './use-resize-observer';
 
 defineOptions({ name: 'VueEasyPullRefresh' });
 
-const props = defineProps({
-    /**
-     * Enable/Disable controled behavior
-     */
-     isControled: {
-        type: Boolean,
-        default: false
-    },
-    /**
-     * Enable/Disable opacity animation
-     * only for isControled === false
-     */
-     isAppearAnimation: {
-        type: Boolean,
-        default: true
-    },
-    /**
-     * Enable/Disable
-     */
-     isDisabled: {
-        type: Boolean,
-        default: false
-    },
-    /**
-     * d&d height
-     */
-    pullDownThreshold: {
-        type: Number,
-        default: 64
-    }
+const props = withDefaults(defineProps<IPullRefreshProps>(), {
+    isControled: false,
+    isAppearAnimation: true,
+    isDisabled: false,
+    pullDownThreshold: 64
 });
 
 const emit = defineEmits({
@@ -179,7 +157,7 @@ function loaderEndHandler() {
         /**
          * Emitted when the refresh animation is fully completed and the UI is idle.
          */
-         emit('settled');
+        emit('settled');
     }
 }
 

@@ -1,4 +1,9 @@
 import type { ComponentPublicInstance } from 'vue';
+import type {
+    TQueueCallback,
+    IPullRefreshProps,
+    IPullRefreshContext
+} from './index.types';
 
 import {
     ref,
@@ -11,9 +16,7 @@ import {
 
 const selectInjectionKey = Symbol('pull-refresh');
 
-type TQueueCallback = () => Promise<any>;
-
-function useProvide<Props extends Record<string, any>>(props: Readonly<Props>) {
+function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
     const queue = new Set<TQueueCallback>();
 
     let touchstartY = 0;
@@ -21,8 +24,8 @@ function useProvide<Props extends Record<string, any>>(props: Readonly<Props>) {
     const isTouching = shallowRef(false);
     const isRefreshing = shallowRef(false);
 
-    const isCanRefresh = computed(() => touchDiff.value >= props.pullDownThreshold && !isRefreshing.value);
-    const topOffset = computed(() => Math.max(0, Math.min(props.pullDownThreshold, touchDiff.value)));
+    const isCanRefresh = computed(() => touchDiff.value >= (props.pullDownThreshold || 0) && !isRefreshing.value);
+    const topOffset = computed(() => Math.max(0, Math.min(props.pullDownThreshold || 0, touchDiff.value)));
     
     function refreshEnd() {
         if (!isRefreshing.value) return;
@@ -87,7 +90,7 @@ function useProvide<Props extends Record<string, any>>(props: Readonly<Props>) {
 }
 
 function useEasyPullRefresh() {
-    const refRefresh = ref<ComponentPublicInstance | null>(null);
+    const refRefresh = ref<ComponentPublicInstance<{ queue: IPullRefreshContext['queue'] }> | null>(null);
 
     function waiter() {
         return new Promise((resolve, reject) => {
@@ -106,22 +109,25 @@ function useEasyPullRefresh() {
         });
     }
 
-    const defaultContext: any = {
+    const defaultContext = {
         queue: new Proxy(new Set(), {
-            get(target: any, prop) {
+            get(target, prop: keyof Set<TQueueCallback>) {
                 if (typeof target[prop] === 'function') {
-                    return async (...arg: Array<any>) => {
+                    return async (...arg: Array<unknown>) => {
                         await waiter();
-                        return (refRefresh.value as any).queue[prop](...arg);
+
+                        return refRefresh.value?.queue
+                            ? (refRefresh.value.queue[prop] as TQueueCallback)(...arg)
+                            : undefined;
                     }
                 }
 
-                return (refRefresh.value as any).queue[prop];
+                return refRefresh.value?.queue[prop];
             }
         })
     };
 
-    const context = inject(selectInjectionKey, defaultContext) as ReturnType<typeof useProvide>;
+    const context = inject(selectInjectionKey, defaultContext as IPullRefreshContext) as ReturnType<typeof useProvide>;
 
     function pullDownQueueAdd(callback: TQueueCallback) {
         context.queue.add(callback);
