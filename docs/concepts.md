@@ -38,7 +38,7 @@ One of the powerful features of `useEasyPullRefresh` is the ability to queue mul
 The `VueEasyPullRefresh` component supports both controlled and uncontrolled behaviors:
 
 - **Uncontrolled**: In the default, uncontrolled mode, the component automatically handles the refresh process. The content is re-rendered when the pull-to-refresh action is triggered.
-- **Controlled**: When `isControled` is set to `true`, the component gives you more control over the refresh process. This mode allows you to manually manage when the refresh process ends, providing more flexibility when integrating with asynchronous operations or complex workflows.
+- **Controlled**: The component gives you more control over the refresh process. This mode allows you to manually manage when the refresh process ends, providing more flexibility when integrating with asynchronous operations or complex workflows.
 
 ## **Refresh Process Overview**
 

@@ -50,11 +50,11 @@ Easily customize the loading indicator by using the loader slot. Replace the def
 :::
 
 ## Controlled Refresh
-Combine `is-controled` with `useEasyPullRefresh` to queue async requests during a refresh, ensuring the content updates only after all operations are complete.
+Use `useEasyPullRefresh` to queue async requests during a refresh, ensuring the content updates only after all operations are complete.
 
 ::: info Preview
 <ClientOnly>
-    <VueEasyPullRefresh :is-controled="true">
+    <VueEasyPullRefresh :is-refresh-content="false">
         <TestFetch />
     </VueEasyPullRefresh>
 </ClientOnly>
@@ -64,7 +64,7 @@ Combine `is-controled` with `useEasyPullRefresh` to queue async requests during 
 ::: code-group
 ```vue [*.vue]
 <template>
-    <VueEasyPullRefresh :is-controled="true">
+    <VueEasyPullRefresh :is-refresh-content="false">
         <ChildComponent>
             <DeepChildComponent>
         </ChildComponent>
@@ -96,7 +96,7 @@ Combine `is-controled` with `useEasyPullRefresh` to queue async requests during 
 :::
 
 ## Controlled Refresh at Component Level
-Combine `is-controled` and `useEasyPullRefresh` to manage pull-to-refresh and queue async requests directly within the component, ensuring content updates after all operations are finished.
+Use `useEasyPullRefresh` to manage pull-to-refresh and queue async requests directly within the component, ensuring content updates after all operations are finished.
 
 ::: info Preview
 <ClientOnly>
@@ -109,7 +109,7 @@ Combine `is-controled` and `useEasyPullRefresh` to manage pull-to-refresh and qu
 <template>
     <VueEasyPullRefresh
         ref="refRefresh"
-        :is-controled="true"
+        :is-refresh-content="false"
     >
         <!-- content -->
     </VueEasyPullRefresh>

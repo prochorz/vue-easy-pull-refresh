@@ -23,12 +23,13 @@ function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
     const touchDiff = shallowRef(0);
     const isTouching = shallowRef(false);
     const isRefreshing = shallowRef(false);
+    const isAsyncInProgress = shallowRef(false);
 
     const isCanRefresh = computed(() => touchDiff.value >= (props.pullDownThreshold || 0) && !isRefreshing.value);
     const topOffset = computed(() => Math.max(0, Math.min(props.pullDownThreshold || 0, touchDiff.value)));
     
     function refreshEnd() {
-        if (!isRefreshing.value) return;
+        if (!isRefreshing.value || isAsyncInProgress.value) return;
     
         touchDiff.value = 0;
         isRefreshing.value = false;
@@ -37,8 +38,11 @@ function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
     async function refreshStart() {
         isRefreshing.value = true;
 
-        if (props.isControled) {
+        if (queue.size) {
+            isAsyncInProgress.value = true;
             await Promise.all(Array.from(queue).map(callback => callback()));
+            isAsyncInProgress.value = false;
+
             refreshEnd();
         }
     }

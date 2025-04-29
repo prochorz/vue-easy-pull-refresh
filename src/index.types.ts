@@ -14,13 +14,14 @@ interface IPullRefreshContext {
 
 interface IPullRefreshProps {
     /**
-     * Enable/Disable controled behavior
+     * Enable/Disable refresh content
      */
-    isControled?: boolean;
-  
+    isRefreshContent?: boolean;
+
     /**
      * Enable/Disable opacity animation
-     * only for isControled === false
+     * on refrashing content
+     * only for isRefreshContent === true
      */
     isAppearAnimation?: boolean;
   

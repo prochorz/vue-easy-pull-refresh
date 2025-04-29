@@ -13,17 +13,17 @@ This is the simplify template of the `<VueEasyPullRefresh>`. It will be helpful 
 
 ## Props
 
-### **`isControled`**
+### **`isRefreshContent`**
 - **Type**: `Boolean`
-- **Default**: `false`
-- **Description**: Enables or disables controlled behavior of the component. When enabled, you have full control over the refresh process using custom APIs (e.g., via `useEasyPullRefresh`). This allows you to manually manage the refresh flow.
+- **Default**: `true`
+- **Description**: Enables or disables automatic content refresh inside the wrapper component. When enabled, the inner content will be reloaded during the refresh action.
 
 ---
 
 ### **`isAppearAnimation`**
 - **Type**: `Boolean`
 - **Default**: `true`
-- **Description**: Enables or disables the fade-in animation of the content. This prop is only applicable when `isControled` is set to `false`.
+- **Description**: Enables or disables the fade-in animation of the content. This prop is only applicable when `isRefreshContent` is set to `true`.
 
 ---
 

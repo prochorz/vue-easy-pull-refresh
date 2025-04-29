@@ -20,14 +20,16 @@
             </slot>
         </div>
 
-        <slot v-if="isControled" />
         <transition
-            v-else
             :enter-active-class="classEnter"
             :leave-active-class="classLeave"
             @after-leave="refreshEnd"
         >
-            <slot :key="uniqKey" />
+            <slot
+                v-if="isRefreshContent"
+                :key="uniqKey"
+            />
+            <slot v-else />
         </transition>
     </div>
 </template>
@@ -51,7 +53,7 @@ import useResizeObserver from './use-resize-observer';
 defineOptions({ name: 'VueEasyPullRefresh' });
 
 const props = withDefaults(defineProps<IPullRefreshProps>(), {
-    isControled: false,
+    isRefreshContent: true,
     isAppearAnimation: true,
     isDisabled: false,
     pullDownThreshold: 64

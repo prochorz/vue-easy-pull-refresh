@@ -34,8 +34,8 @@ import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 
 | Prop                  | Type     | Default | Description                                                  |
 |-----------------------|----------|---------|--------------------------------------------------------------|
-| `isControled`          | `Boolean`| `false` | Enable or disable controlled behavior                         |
-| `isAppearAnimation`    | `Boolean`| `true`  | Enable or disable the opacity animation (only when `isControled` is `false`) |
+| `isRefreshContent`     | `Boolean`| `true` | Enable or disable refresh content                         |
+| `isAppearAnimation`    | `Boolean`| `true`  | Enable or disable the opacity animation (only when `isRefreshContent` is `true`) |
 | `isDisabled`           | `Boolean`| `false` | Disable pull-to-refresh functionality                        |
 | `pullDownThreshold`    | `Number` | `64`    | The distance required for the user to pull down to trigger refresh |
 
@@ -54,7 +54,7 @@ In some cases, you may need to interact directly with the pull-to-refresh logic 
 
 ```vue
 <template>
-  <VueEasyPullRefresh ref="refRefresh" :is-controled="true">
+  <VueEasyPullRefresh ref="refRefresh" :is-refresh-сontent="false">
     <TestScreen />
   </VueEasyPullRefresh>
 </template>

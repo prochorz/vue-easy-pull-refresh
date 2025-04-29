@@ -11,11 +11,9 @@ function useResizeObserver() {
 
     let resizeObserver: ResizeObserver;
 
-    const width = shallowRef(0);
     const height = shallowRef(0);
 
     const updateResizeHandler = debounce(() => {
-        width.value = refEl.value?.clientWidth;
         height.value = refEl.value?.clientHeight;
     });
 
@@ -40,7 +38,6 @@ function useResizeObserver() {
 
     return {
         refEl,
-        width,
         height
     };
 }
