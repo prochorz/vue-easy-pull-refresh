@@ -1,0 +1,1 @@
+export const MIN_REFRESH_DURATION_MS = 1500

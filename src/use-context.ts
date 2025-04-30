@@ -14,6 +14,8 @@ import {
     onBeforeUnmount
 } from 'vue';
 
+import { MIN_REFRESH_DURATION_MS } from './constants';
+
 const selectInjectionKey = Symbol('pull-refresh');
 
 function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
@@ -40,7 +42,10 @@ function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
 
         if (queue.size) {
             isAsyncInProgress.value = true;
-            await Promise.all(Array.from(queue).map(callback => callback()));
+            await Promise.all([
+                new Promise(resolve => setTimeout(resolve, MIN_REFRESH_DURATION_MS)),
+                ...Array.from(queue).map(callback => callback())
+            ]);
             isAsyncInProgress.value = false;
 
             refreshEnd();

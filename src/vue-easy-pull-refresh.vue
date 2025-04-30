@@ -49,6 +49,7 @@ import {
 import { useProvide } from './use-context';
 import { getScrollParents } from './utils';
 import useResizeObserver from './use-resize-observer';
+import { MIN_REFRESH_DURATION_MS } from './constants';
 
 defineOptions({ name: 'VueEasyPullRefresh' });
 
@@ -106,6 +107,7 @@ const classEnter = computed(() => {
 });
 
 const contentStyle = computed(() => ({
+    duration: `${MIN_REFRESH_DURATION_MS}ms`,
     overflow: topOffset.value ? 'hidden' : 'unset',
     userSelect: topOffset.value ? 'none' : 'auto',
     transform: `translateY(${topOffset.value}px)`,
@@ -271,7 +273,7 @@ defineExpose({ queue });
 .refreshLeave,
 .refreshEnter {
     pointer-events: none;
-    animation-duration: 1.5s;
+    animation-duration: v-bind('contentStyle.duration');
 }
 
 .refreshLeave {
