@@ -153,11 +153,6 @@ function preventedTouchMoveHandler(e: TouchEvent | MouseEvent) {
     
     if (isScrollParentsTop || isParentsTop) {
         touchMoveHandler(e);
-
-        /**
-         * Emitted when the pull-to-refresh gesture is initiated by the user.
-         */
-        emit('started');
     }
 }
 
@@ -174,6 +169,13 @@ function loaderEndHandler() {
     
 function topOffsetUpdate(newVal: number, oldVal: number) {
     isGoingUp.value = newVal < oldVal;
+
+    if (!oldVal && newVal) {
+        /**
+         * Emitted when the pull-to-refresh gesture is initiated by the user.
+         */
+        emit('started');
+    }
 
     if (topOffset.value === props.pullDownThreshold) {
         /**
