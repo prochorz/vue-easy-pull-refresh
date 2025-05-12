@@ -41,6 +41,7 @@ import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 
 ## Events
 
+- **`started`**: Emitted when the user initiates a pull-down gesture. This occurs before the refresh threshold is reached, indicating the beginning of the interaction.
 - **`reached`**: Emitted when the pull-to-refresh threshold is reached and the refresh process begins.
 - **`settled`**: Emitted when the refresh animation is fully completed and the component has returned to its idle state.
 

@@ -61,6 +61,7 @@ const props = withDefaults(defineProps<IPullRefreshProps>(), {
 });
 
 const emit = defineEmits({
+    started: null,
     settled: null,
     reached: null
 });
@@ -152,6 +153,11 @@ function preventedTouchMoveHandler(e: TouchEvent | MouseEvent) {
     
     if (isScrollParentsTop || isParentsTop) {
         touchMoveHandler(e);
+
+        /**
+         * Emitted when the pull-to-refresh gesture is initiated by the user.
+         */
+        emit('started');
     }
 }
 
@@ -175,7 +181,7 @@ function topOffsetUpdate(newVal: number, oldVal: number) {
          */
         emit('reached');
     }
-};
+}
 
 watch(isRefreshing, updateKey);
 watch(topOffset, topOffsetUpdate);
