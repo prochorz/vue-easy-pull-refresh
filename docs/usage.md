@@ -124,7 +124,7 @@ Pass the first request in the queue as a prop to execute when pull-to-refresh is
 
 ## Controlled Refresh at Component Level
 ::: warning Deprecated
-This approach is deprecated starting from version 1.1.0. Use the `initial-queue` prop instead.
+This approach is deprecated starting from version 1.1.3. Use the `initial-queue` prop instead.
 :::
 
 Use `useEasyPullRefresh` to manage pull-to-refresh and queue async requests directly within the component, ensuring content updates after all operations are finished.
