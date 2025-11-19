@@ -1,6 +1,6 @@
 # VueEasyPullRefresh
 
-**VueEasyPullRefresh** is a lightweight, easy-to-use pull-to-refresh plugin for Vue 3. With just a few lines of code, you can add pull-to-refresh functionality to your app, supporting both mobile and desktop platforms. Customize the loader, control refresh behavior, and manage asynchronous tasks seamlessly.
+VueEasyPullRefresh is a lightweight, easy-to-use pull-to-refresh plugin for Vue 3. With just a few lines of code, you can add pull-to-refresh functionality to your app, supporting both mobile and desktop platforms. Customize the loader, control refresh behavior, and manage asynchronous tasks seamlessly.
 
 ## Installation
 
@@ -38,6 +38,7 @@ import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 | `isAppearAnimation`    | `Boolean`| `true`  | Enable or disable the opacity animation (only when `isRefreshContent` is `true`) |
 | `isDisabled`           | `Boolean`| `false` | Disable pull-to-refresh functionality                        |
 | `pullDownThreshold`    | `Number` | `64`    | The distance required for the user to pull down to trigger refresh |
+| `initialQueue`         | `Function returning Promise` | `undefined` | Pass the first request in the queue as a prop to execute when pull-to-refresh is triggered |
 
 ## Events
 
