@@ -7,6 +7,7 @@ import type {
 
 import {
     ref,
+    watch,
     inject,
     provide,
     computed,
@@ -74,9 +75,22 @@ function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
         }
     }
 
+    function updateInitialQueue(currentFn?: TQueueCallback, prevFn?: TQueueCallback) {
+        if (prevFn) {
+            queue.delete(prevFn);
+        }
+
+        if (currentFn) {
+            queue.add(currentFn);
+            
+        }
+    }
+
     onBeforeUnmount(() => {
         queue.clear();
     });
+
+    watch(() => props.initialQueue, updateInitialQueue, { immediate: true });
 
     const context = {
         queue,
@@ -96,6 +110,9 @@ function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
 function useEasyPullRefresh() {
     const refRefresh = ref<ComponentPublicInstance<{ queue: IPullRefreshContext['queue'] }> | null>(null);
 
+    /**
+     * @deprecated since v1.1.0. Use initial-queue prop instead.
+     */
     function waiter() {
         return new Promise((resolve, reject) => {
             const decline = setTimeout(reject, 1000, new Error('PullToRefresh: context not found'));
@@ -117,11 +134,11 @@ function useEasyPullRefresh() {
         queue: new Proxy(new Set(), {
             get(target, prop: keyof Set<TQueueCallback>) {
                 if (typeof target[prop] === 'function') {
-                    return async (...arg: Array<unknown>) => {
+                    return async () => {
                         await waiter();
 
                         return refRefresh.value?.queue
-                            ? (refRefresh.value.queue[prop] as TQueueCallback)(...arg)
+                            ? (refRefresh.value.queue[prop] as TQueueCallback)()
                             : undefined;
                     }
                 }

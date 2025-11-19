@@ -56,7 +56,8 @@ const props = withDefaults(defineProps<IPullRefreshProps>(), {
     isRefreshContent: true,
     isAppearAnimation: true,
     isDisabled: false,
-    pullDownThreshold: 64
+    pullDownThreshold: 64,
+    initialQueue: undefined
 });
 
 const emit = defineEmits({

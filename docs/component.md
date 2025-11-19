@@ -39,6 +39,13 @@ This is the simplify template of the `<VueEasyPullRefresh>`. It will be helpful 
 - **Default**: `64`
 - **Description**: Sets the height the user needs to pull down to trigger the refresh action. This value determines how sensitive the pull-to-refresh gesture is, and can be adjusted to customize the experience.
 
+---
+
+### **`initialQueue`**
+- **Type**: `Function returning Promise`
+- **Default**: `undefined`
+- **Description**: Pass the first request in the queue as a prop to execute when pull-to-refresh is triggered. This function will be called automatically during the refresh action.
+
 ## Events
 
 ### **`reached`**

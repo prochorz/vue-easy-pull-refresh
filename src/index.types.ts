@@ -1,6 +1,6 @@
 import type { ComputedRef, ShallowRef } from 'vue';
 
-type TQueueCallback = (...arg: Array<unknown>) => Promise<unknown>;
+type TQueueCallback = () => Promise<unknown>;
 
 interface IPullRefreshContext {
     queue: Set<TQueueCallback>;
@@ -34,6 +34,11 @@ interface IPullRefreshProps {
      * d&d height
      */
     pullDownThreshold?: number;
+  
+    /**
+     * Initial Queue
+     */
+    initialQueue?: TQueueCallback;
 }
 
 export type {
