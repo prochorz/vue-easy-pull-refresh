@@ -134,11 +134,11 @@ function useEasyPullRefresh() {
         queue: new Proxy(new Set(), {
             get(target, prop: keyof Set<TQueueCallback>) {
                 if (typeof target[prop] === 'function') {
-                    return async () => {
+                    return async (...args: unknown[]) => {
                         await waiter();
 
                         return refRefresh.value?.queue
-                            ? (refRefresh.value.queue[prop] as TQueueCallback)()
+                            ? (refRefresh.value.queue[prop] as Function)(...args)
                             : undefined;
                     }
                 }
