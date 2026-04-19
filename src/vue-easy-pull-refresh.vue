@@ -21,9 +21,9 @@
         </div>
 
         <transition
-            :enter-active-class="classEnter"
-            :leave-active-class="classLeave"
-            @after-leave="refreshEnd"
+            :css="false"
+            @enter="enterHandler"
+            @leave="leaveHandler"
         >
             <slot
                 v-if="isRefreshContent"
@@ -46,30 +46,39 @@ import {
     useCssModule
 } from 'vue';
 
-import { useProvide } from './use-context';
+import {
+    useProvide,
+    ANIMATION_DURATION
+} from './use-context';
 import { getScrollParents } from './utils';
 import useResizeObserver from './use-resize-observer';
+
+const FADE_IN_DELAYED: Keyframe[] = [{ opacity: 0 }, { opacity: 0, offset: 0.5 }, { opacity: 1 }];
+const FADE_OUT_EARLY: Keyframe[] = [{ opacity: 1 }, { opacity: 1, offset: 0.5 }, { opacity: 0 }];
+const FADE_IN: Keyframe[] = [{ opacity: 0 }, { opacity: 1 }];
+const HOLD: Keyframe[] = [{ opacity: 1 }, { opacity: 1 }];
 
 defineOptions({ name: 'VueEasyPullRefresh' });
 
 const props = withDefaults(defineProps<IPullRefreshProps>(), {
     isRefreshContent: true,
     isAppearAnimation: true,
+    isFreezeContent: false,
     isDisabled: false,
     pullDownThreshold: 64,
     initialQueue: undefined
 });
 
 const emit = defineEmits({
-    settled: null,
-    reached: null
+    settled: () => true,
+    reached: () => true
 });
 
 const {
     queue,
     topOffset,
-    refreshEnd,
     isRefreshing,
+    waitForRefresh,
     touchEndHandler,
     touchMoveHandler,
     touchStartHandler
@@ -79,32 +88,55 @@ const { refEl, height } = useResizeObserver();
 
 let scrollParents: HTMLElement[] = [];
 
-const uniqKey = shallowRef();
+let keyCounter = 0;
+const uniqKey = shallowRef(0);
 const isReady = shallowRef(false);
 const isGoingUp = shallowRef(false);
 
 const isLoaderExist = computed(() => !props.isDisabled && (isGoingUp.value || topOffset.value));
 
-const classLeave = computed(() => {
-    if (!isReady.value) {
-        return "";
-    }
+// Apply className, optionally wait for the queue (freeze mode), optionally
+// play a WAAPI animation, then clean up. The className is applied before the
+// wait so freeze mode gets pointer-events/positioning overrides during it.
+async function transition(
+    el: HTMLElement,
+    keyframes: Keyframe[] | null,
+    className: string,
+    duration: number,
+) {
+    if (!isReady.value) return;
+    if (!keyframes && !props.isFreezeContent) return;
 
-    return [
-        classes.refreshLeave,
-        props.isAppearAnimation ? classes.refreshFadeLeave : null
-    ].join(" ");
-});
-const classEnter = computed(() => {
-    if (!isReady.value) {
-        return "";
+    el.classList.add(className);
+    if (props.isFreezeContent) await waitForRefresh();
+    try {
+        if (keyframes) {
+            await el.animate(keyframes, { duration, fill: 'forwards' }).finished;
+        }
+    } finally {
+        el.classList.remove(className);
     }
+}
 
-    return [
-        classes.refreshEnter,
-        props.isAppearAnimation ? classes.refreshFadeEnter : null
-    ].join(" ");
-});
+async function enterHandler(el: Element, done: () => void) {
+    const [keyframes, duration] = props.isAppearAnimation
+        ? (props.isFreezeContent
+            ? [FADE_IN, ANIMATION_DURATION / 2]
+            : [FADE_IN_DELAYED, ANIMATION_DURATION])
+        : [null, 0];
+    await transition(el as HTMLElement, keyframes, classes.refreshEnter, duration);
+    done();
+}
+
+async function leaveHandler(el: Element, done: () => void) {
+    const [keyframes, duration] = props.isAppearAnimation
+        ? (props.isFreezeContent
+            ? [HOLD, ANIMATION_DURATION / 2]
+            : [FADE_OUT_EARLY, ANIMATION_DURATION])
+        : [null, 0];
+    await transition(el as HTMLElement, keyframes, classes.refreshLeave, duration);
+    done();
+}
 
 const contentStyle = computed(() => ({
     overflow: topOffset.value ? 'hidden' : 'unset',
@@ -116,8 +148,10 @@ const loaderStyle = computed(() => ({ maxHeight: `${topOffset.value}px` }));
 
 async function updateKey() {
     if (isRefreshing.value) {
-        await nextTick();
-        uniqKey.value = Date.now();
+        if (!props.isFreezeContent) {
+            await nextTick();
+        }
+        uniqKey.value = ++keyCounter;
     }
 }
 
@@ -174,7 +208,7 @@ function topOffsetUpdate(newVal: number, oldVal: number) {
          */
         emit('reached');
     }
-};
+}
 
 watch(isRefreshing, updateKey);
 watch(topOffset, topOffsetUpdate);
@@ -184,33 +218,11 @@ watch([topOffset, isRefreshing], preventScrollParents);
 defineExpose({ queue });
 </script>
 
-<style scoped module>
-@keyframes loading { 
+<style module>
+@keyframes loading {
     100% { transform: rotate(1turn) }
 }
 
-@keyframes staticLeave { 
-    0% { opacity: 1; }
-    100% { opacity: 1; }
-}
-
-@keyframes staticEnter { 
-    0% { opacity: 0; }
-    100% { opacity: 0; }
-}
-
-@keyframes fadeLeave { 
-    0% { opacity: 1; }
-    50% { opacity: 1; }
-    100% { opacity: 0; }
-}
-
-@keyframes fadeEnter { 
-    0% { opacity: 0; }
-    50% { opacity: 0; }
-    100% { opacity: 1; }
-}
-          
 .container {
     position: relative;
     height: 100%;
@@ -269,28 +281,16 @@ defineExpose({ queue });
     animation: loading 1s infinite linear;
 }
 
-.refreshLeave,
+.refreshLeave {
+    pointer-events: none;
+}
+
 .refreshEnter {
     pointer-events: none;
-    animation-duration: 1.5s;
-}
-
-.refreshLeave {
-    animation-name: staticLeave;
-}
-
-.refreshEnter {
-    animation-name: staticEnter;
     position: absolute;
     inset: 0;
     z-index: 10000;
+    opacity: 0;
 }
 
-.refreshFadeLeave {
-    animation-name: fadeLeave;
-}
-
-.refreshFadeEnter {
-    animation-name: fadeEnter;
-}
 </style>

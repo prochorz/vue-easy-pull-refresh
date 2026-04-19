@@ -1,9 +1,11 @@
 import DefaultTheme from 'vitepress/theme';
 
-import TestFetch from './components/test-fetch.vue';
-import TestScreen from './components/test-screen.vue';
+import DemoBox from './components/demo-box.vue';
+import DemoPair from './components/demo-pair.vue';
+import DemoContent from './components/demo-content.vue';
+import DemoQueue from './components/demo-queue.vue';
 import TestContentFetch from './components/test-content-fetch.vue';
-import TestInititialQueue from './components/test-inititial-queue.vue';
+import TestPlayground from './components/test-playground.vue';
 import {
     VueEasyPullRefresh
 } from '../../../src';
@@ -11,10 +13,12 @@ import {
 export default {
     extends: DefaultTheme,
     enhanceApp({ app }: any) {
-        app.component('TestFetch', TestFetch);
-        app.component('TestScreen', TestScreen);
+        app.component('DemoBox', DemoBox);
+        app.component('DemoPair', DemoPair);
+        app.component('DemoContent', DemoContent);
+        app.component('DemoQueue', DemoQueue);
         app.component('TestContentFetch', TestContentFetch);
-        app.component('TestInititialQueue', TestInititialQueue);
+        app.component('TestPlayground', TestPlayground);
         app.component('VueEasyPullRefresh', VueEasyPullRefresh);
     }
 }

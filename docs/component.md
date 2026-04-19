@@ -27,6 +27,47 @@ This is the simplify template of the `<VueEasyPullRefresh>`. It will be helpful 
 
 ---
 
+### **`isFreezeContent`**
+- **Type**: `Boolean`
+- **Default**: `false`
+- **Description**: Freezes the content swap animation until the loader is fully hidden. When enabled, the entering content stays invisible and the leaving content stays put while the loader is visible; both opacity animations only start after the `settled` event. Useful when you want the content transition to happen **after** the pull-to-refresh UI has returned to its idle state, rather than overlapping with the loader hiding. This prop is only applicable when `isRefreshContent` is set to `true`.
+
+#### Behavior matrix
+
+| `isAppearAnimation` | `isFreezeContent` | Effect |
+| --- | --- | --- |
+| `true`  | `false` | Fade animation starts immediately when the content key changes (default). |
+| `true`  | `true`  | Old content stays visible, new content stays hidden until the loader finishes hiding; then the fade happens. |
+| `false` | `false` | Content swap without fade, overlapping with loader hide. |
+| `false` | `true`  | Content swap without fade, deferred until the loader finishes hiding. |
+
+#### Example
+
+```vue
+<script setup>
+import { VueEasyPullRefresh, useEasyPullRefresh } from 'vue-easy-pull-refresh';
+
+const { pullDownQueueAdd } = useEasyPullRefresh();
+
+pullDownQueueAdd(async () => {
+    await fetch('/api/feed').then(r => r.json());
+});
+</script>
+
+<template>
+    <VueEasyPullRefresh
+        :is-freeze-content="true"
+        @settled="onSettled"
+    >
+        <FeedList />
+    </VueEasyPullRefresh>
+</template>
+```
+
+With `isFreezeContent` the user sees the old feed until the loader has fully rolled up; only then does the new feed fade in. This avoids the "content flickering while the loader is still on screen" effect.
+
+---
+
 ### **`isDisabled`**
 - **Type**: `Boolean`
 - **Default**: `false`

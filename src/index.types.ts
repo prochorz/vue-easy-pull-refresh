@@ -6,7 +6,7 @@ interface IPullRefreshContext {
     queue: Set<TQueueCallback>;
     topOffset: ComputedRef<number>;
     isRefreshing: ShallowRef<boolean>;
-    refreshEnd: () => void;
+    waitForRefresh: () => Promise<unknown>;
     touchEndHandler: () => void;
     touchMoveHandler: (e: TouchEvent | MouseEvent) => void;
     touchStartHandler: (e: TouchEvent | MouseEvent) => void;
@@ -24,7 +24,13 @@ interface IPullRefreshProps {
      * only for isRefreshContent === true
      */
     isAppearAnimation?: boolean;
-  
+
+    /**
+     * Freeze refreshing content until the loader is fully hidden.
+     * When true, enter/leave opacity animations are deferred until the `settled` event.
+     */
+    isFreezeContent?: boolean;
+
     /**
      * Enable/Disable
      */

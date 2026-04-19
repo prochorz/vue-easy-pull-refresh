@@ -17,6 +17,8 @@ import {
 
 const selectInjectionKey = Symbol('pull-refresh');
 
+const ANIMATION_DURATION = 1500;
+
 function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
     const queue = new Set<TQueueCallback>();
 
@@ -24,28 +26,31 @@ function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
     const touchDiff = shallowRef(0);
     const isTouching = shallowRef(false);
     const isRefreshing = shallowRef(false);
-    const isAsyncInProgress = shallowRef(false);
 
     const isCanRefresh = computed(() => touchDiff.value >= (props.pullDownThreshold || 0) && !isRefreshing.value);
     const topOffset = computed(() => Math.max(0, Math.min(props.pullDownThreshold || 0, touchDiff.value)));
-    
-    function refreshEnd() {
-        if (!isRefreshing.value || isAsyncInProgress.value) return;
-    
-        touchDiff.value = 0;
-        isRefreshing.value = false;
-    }
-    
+
+    let refreshingPromise: Promise<unknown> | null = null;
+    let isUnmounted = false;
+
     async function refreshStart() {
         isRefreshing.value = true;
 
-        if (queue.size) {
-            isAsyncInProgress.value = true;
-            await Promise.all(Array.from(queue).map(callback => callback()));
-            isAsyncInProgress.value = false;
+        refreshingPromise = Promise.all([
+            new Promise(resolve => setTimeout(resolve, ANIMATION_DURATION)),
+            ...Array.from(queue, cb => cb())
+        ]);
+        await refreshingPromise;
+        refreshingPromise = null;
 
-            refreshEnd();
-        }
+        if (isUnmounted) return;
+
+        touchDiff.value = 0;
+        isRefreshing.value = false;
+    }
+
+    function waitForRefresh(): Promise<unknown> {
+        return refreshingPromise ?? Promise.resolve();
     }
     
     function touchStartHandler (e: TouchEvent | MouseEvent) {
@@ -87,6 +92,7 @@ function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
     }
 
     onBeforeUnmount(() => {
+        isUnmounted = true;
         queue.clear();
     });
 
@@ -96,7 +102,7 @@ function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
         queue,
         topOffset,
         isRefreshing,
-        refreshEnd,
+        waitForRefresh,
         touchEndHandler,
         touchMoveHandler,
         touchStartHandler
@@ -138,7 +144,7 @@ function useEasyPullRefresh() {
                         await waiter();
 
                         return refRefresh.value?.queue
-                            ? (refRefresh.value.queue[prop] as Function)(...args)
+                            ? (refRefresh.value.queue[prop] as (...args: unknown[]) => unknown)(...args)
                             : undefined;
                     }
                 }
@@ -165,6 +171,7 @@ function useEasyPullRefresh() {
 }
 
 export {
+    ANIMATION_DURATION,
     useProvide,
     useEasyPullRefresh
 };

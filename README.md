@@ -1,28 +1,36 @@
 # VueEasyPullRefresh
 
-VueEasyPullRefresh is a lightweight, easy-to-use pull-to-refresh plugin for Vue 3. With just a few lines of code, you can add pull-to-refresh functionality to your app, supporting both mobile and desktop platforms. Customize the loader, control refresh behavior, and manage asynchronous tasks seamlessly.
+Lightweight pull-to-refresh component for Vue 3. Works on both mobile (touch) and desktop (mouse). Bring-your-own loader, register async tasks from anywhere in the tree, and fine-tune the refresh animation.
+
+**[Live demo & full docs →](https://prochorz.github.io/vue-easy-pull-refresh/)**
+
+## Features
+
+- Vue 3 only, no extra runtime dependencies
+- Touch and mouse gesture support
+- Customizable loader via a named slot
+- Register async tasks (`pullDownQueueAdd`) from any descendant — the loader waits for the slowest one
+- Freeze the content swap until the loader is fully hidden
+- Ships ESM + UMD builds with TypeScript declarations
+
+## Requirements
+
+- Vue >= 3.0 (peer dependency)
+- Node >= 20 (dev only)
 
 ## Installation
-
-Install `VueEasyPullRefresh` via npm:
 
 ```bash
 npm install vue-easy-pull-refresh
 ```
 
-## Setup
-
-To use **VueEasyPullRefresh** in your Vue 3 project, follow these simple steps:
-
-### Import
-
-Import the component into your Vue component:
+## Quick start
 
 ```vue
 <template>
-  <VueEasyPullRefresh>
-    <!-- content -->
-  </VueEasyPullRefresh>
+    <VueEasyPullRefresh>
+        <YourContent />
+    </VueEasyPullRefresh>
 </template>
 
 <script setup>
@@ -32,47 +40,51 @@ import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 
 ## Props
 
-| Prop                  | Type     | Default | Description                                                  |
-|-----------------------|----------|---------|--------------------------------------------------------------|
-| `isRefreshContent`     | `Boolean`| `true` | Enable or disable refresh content                         |
-| `isAppearAnimation`    | `Boolean`| `true`  | Enable or disable the opacity animation (only when `isRefreshContent` is `true`) |
-| `isDisabled`           | `Boolean`| `false` | Disable pull-to-refresh functionality                        |
-| `pullDownThreshold`    | `Number` | `64`    | The distance required for the user to pull down to trigger refresh |
-| `initialQueue`         | `Function returning Promise` | `undefined` | Pass the first request in the queue as a prop to execute when pull-to-refresh is triggered |
+| Prop                  | Type                           | Default     | Description |
+|-----------------------|--------------------------------|-------------|-------------|
+| `isRefreshContent`    | `Boolean`                      | `true`      | Re-mount the default slot on each refresh (re-keys children). Set to `false` if you want the same instances to stay in place and update their own data via the queue. |
+| `isAppearAnimation`   | `Boolean`                      | `true`      | Fade-in animation of the refreshed content. Only applicable when `isRefreshContent` is `true`. |
+| `isFreezeContent`     | `Boolean`                      | `false`     | Defer the content swap animation until the loader is fully hidden (until `settled`). Only applicable when `isRefreshContent` is `true`. |
+| `isDisabled`          | `Boolean`                      | `false`     | Turn the gesture off entirely — no pull, no loader, no refresh. |
+| `pullDownThreshold`   | `Number`                       | `64`        | Distance (px) the user has to pull before a refresh fires. |
+| `initialQueue`        | `() => Promise<unknown>`       | `undefined` | Async callback that runs on every refresh. Useful when you only have a single task and don't want to wire `useEasyPullRefresh` inside a child. |
 
 ## Events
 
-- **`reached`**: Emitted when the pull-to-refresh threshold is reached and the refresh process begins.
-- **`settled`**: Emitted when the refresh animation is fully completed and the component has returned to its idle state.
+| Event     | Payload | Description |
+|-----------|---------|-------------|
+| `reached` | —       | Emitted when the pull-down gesture reaches `pullDownThreshold` and the refresh starts. |
+| `settled` | —       | Emitted when the refresh animation finishes and the component returns to its idle state. |
 
 ## Slots
 
-- **`loader`**: Customize the loading indicator shown during refresh. If not provided, a default loader will be used.
+| Slot      | Description |
+|-----------|-------------|
+| `default` | Main content wrapped by the pull-to-refresh gesture. |
+| `loader`  | Custom loader shown while the refresh is in progress. Falls back to a built-in spinner if omitted. |
 
-## Usage with `useEasyPullRefresh`
+## Example: refresh an API call
 
-In some cases, you may need to interact directly with the pull-to-refresh logic within your component. You can use the `useEasyPullRefresh` function to add asynchronous tasks to the refresh queue.
+Pass an async callback via `initial-queue` — it runs on every pull-down refresh, and the loader stays visible until the promise resolves.
 
 ```vue
 <template>
-  <VueEasyPullRefresh ref="refRefresh" :is-refresh-сontent="false">
-    <TestScreen />
-  </VueEasyPullRefresh>
+    <VueEasyPullRefresh :initial-queue="load">
+        <FeedList />
+    </VueEasyPullRefresh>
 </template>
 
 <script setup>
-import { VueEasyPullRefresh, useEasyPullRefresh } from 'vue-easy-pull-refresh';
+import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 
-const { refRefresh, pullDownQueueAdd } = useEasyPullRefresh();
-
-const request = () => {
-  return new Promise(resolve => setTimeout(resolve, 2000)); // Simulate async task
-};
-
-pullDownQueueAdd(request);
+function load() {
+    return fetch('/api/feed').then(r => r.json());
+}
 </script>
 ```
 
+For multiple tasks across children, custom loaders, and more — see the [full docs](https://prochorz.github.io/vue-easy-pull-refresh/).
+
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+MIT — see [LICENSE](./LICENSE).
