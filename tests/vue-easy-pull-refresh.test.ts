@@ -132,6 +132,60 @@ describe('VueEasyPullRefresh', () => {
         await vi.advanceTimersByTimeAsync(ANIMATION_DURATION);
     });
 
+    describe('settled event', () => {
+        async function runRefresh(wrapper: ReturnType<typeof mountRefresh>) {
+            const root = wrapper.find('div');
+            await root.trigger('mousedown', { clientY: 0 });
+            await root.trigger('mousemove', { clientY: 100 });
+            await root.trigger('mouseup');
+            await nextTick();
+            await vi.advanceTimersByTimeAsync(ANIMATION_DURATION);
+            await nextTick();
+        }
+
+        it('ignores transitionend for unrelated CSS properties', async () => {
+            const wrapper = mountRefresh({ pullDownThreshold: 40 });
+            await runRefresh(wrapper);
+            const loader = wrapper.find('[class*="loaderWrapper"]');
+            expect(loader.exists()).toBe(true);
+
+            await loader.trigger('transitionend', { propertyName: 'opacity' });
+            await loader.trigger('transitionend', { propertyName: 'transform' });
+
+            expect(wrapper.emitted('settled')).toBeUndefined();
+        });
+
+        it('emits settled once when max-height transition ends', async () => {
+            const wrapper = mountRefresh({ pullDownThreshold: 40 });
+            await runRefresh(wrapper);
+            const loader = wrapper.find('[class*="loaderWrapper"]');
+
+            await loader.trigger('transitionend', { propertyName: 'max-height' });
+            await loader.trigger('transitionend', { propertyName: 'max-height' });
+
+            expect(wrapper.emitted('settled')).toHaveLength(1);
+        });
+
+        it('ignores transitionend bubbling from child elements', async () => {
+            const wrapper = mount(VueEasyPullRefresh, {
+                props: { pullDownThreshold: 40 },
+                slots: {
+                    default: '<p>content</p>',
+                    loader: '<span class="inner-loader">loading</span>'
+                }
+            });
+            await runRefresh(wrapper);
+            const inner = wrapper.find('.inner-loader');
+
+            const event = new Event('transitionend', { bubbles: true });
+            Object.defineProperty(event, 'propertyName', { value: 'max-height' });
+            inner.element.dispatchEvent(event);
+            await nextTick();
+
+            expect(wrapper.emitted('settled')).toBeUndefined();
+        });
+    });
+
     it('exposes queue through template ref', () => {
         const wrapper = mountRefresh();
         const exposed = wrapper.vm as unknown as { queue: Set<unknown> };

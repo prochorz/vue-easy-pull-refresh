@@ -188,7 +188,9 @@ function preventedTouchMoveHandler(e: TouchEvent | MouseEvent) {
     }
 }
 
-function loaderEndHandler() {
+function loaderEndHandler(e: TransitionEvent) {
+    if (e.target !== e.currentTarget || e.propertyName !== 'max-height') return;
+
     if (isGoingUp.value) {
         isGoingUp.value = false;
         /**
