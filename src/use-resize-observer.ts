@@ -4,7 +4,7 @@ import {
     onUnmounted
 } from 'vue';
 
-import { debounce } from './utils';
+import { debounce, isSSR } from './utils';
 
 function useResizeObserver() {
     const refEl = shallowRef();
@@ -18,6 +18,7 @@ function useResizeObserver() {
     });
 
     function init() {
+        if (isSSR) return;
         resizeObserver = new ResizeObserver(updateResizeHandler);
         resizeObserver.observe?.(refEl.value);
     }

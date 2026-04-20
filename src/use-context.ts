@@ -15,6 +15,8 @@ import {
     onBeforeUnmount
 } from 'vue';
 
+import { isSSR } from './utils';
+
 const selectInjectionKey = Symbol('pull-refresh');
 
 const ANIMATION_DURATION = 1500;
@@ -124,6 +126,8 @@ function useEasyPullRefresh() {
      * @deprecated since v1.1.0. Use initial-queue prop instead.
      */
     function waiter() {
+        if (isSSR) return Promise.resolve(true);
+
         return new Promise((resolve, reject) => {
             const decline = setTimeout(reject, 1000, new Error('PullToRefresh: context not found'));
 

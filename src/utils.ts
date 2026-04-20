@@ -1,7 +1,7 @@
+export const isSSR = typeof window === 'undefined';
+
 export function hasScrollbar (el?: Element | null) {
-    if (!el || el.nodeType !== Node.ELEMENT_NODE) {
-        return false;
-    }
+    if (isSSR || el?.nodeType !== 1) return false;
 
     const style = window.getComputedStyle(el);
     return style.overflowY === 'scroll' || (style.overflowY === 'auto' && el.scrollHeight > el.clientHeight);
