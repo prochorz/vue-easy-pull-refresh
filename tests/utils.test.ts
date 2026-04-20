@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, test, vi } from 'vitest';
 
 import { debounce, getScrollParents, hasScrollbar } from '../src/utils';
 
@@ -25,28 +25,23 @@ describe('hasScrollbar', () => {
         expect(hasScrollbar(textNode)).toBe(false);
     });
 
-    it('returns true when overflowY is scroll', () => {
-        const el = createEl({ overflowY: 'scroll' });
-        document.body.appendChild(el);
-        expect(hasScrollbar(el)).toBe(true);
-    });
+    type Case = {
+        label: string;
+        style: Partial<CSSStyleDeclaration>;
+        scrollHeight?: number;
+        clientHeight?: number;
+        expected: boolean;
+    };
 
-    it('returns true for auto overflow when content overflows', () => {
-        const el = createEl({ overflowY: 'auto' }, { scrollHeight: 500, clientHeight: 100 });
+    test.for<Case>([
+        { label: 'overflow-y: scroll', style: { overflowY: 'scroll' }, expected: true },
+        { label: 'overflow-y: auto with overflowing content', style: { overflowY: 'auto' }, scrollHeight: 500, clientHeight: 100, expected: true },
+        { label: 'overflow-y: auto without overflow', style: { overflowY: 'auto' }, scrollHeight: 100, clientHeight: 100, expected: false },
+        { label: 'overflow-y: visible', style: { overflowY: 'visible' }, scrollHeight: 500, clientHeight: 100, expected: false }
+    ])('returns $expected for $label', ({ style, scrollHeight, clientHeight, expected }, { expect }) => {
+        const el = createEl(style, { scrollHeight, clientHeight });
         document.body.appendChild(el);
-        expect(hasScrollbar(el)).toBe(true);
-    });
-
-    it('returns false for auto overflow without overflowing content', () => {
-        const el = createEl({ overflowY: 'auto' }, { scrollHeight: 100, clientHeight: 100 });
-        document.body.appendChild(el);
-        expect(hasScrollbar(el)).toBe(false);
-    });
-
-    it('returns false for visible overflow', () => {
-        const el = createEl({ overflowY: 'visible' }, { scrollHeight: 500, clientHeight: 100 });
-        document.body.appendChild(el);
-        expect(hasScrollbar(el)).toBe(false);
+        expect(hasScrollbar(el)).toBe(expected);
     });
 });
 
