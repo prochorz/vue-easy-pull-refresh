@@ -40,13 +40,17 @@ function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
             new Promise(resolve => setTimeout(resolve, ANIMATION_DURATION)),
             ...Array.from(queue, cb => cb())
         ]);
-        await refreshingPromise;
-        refreshingPromise = null;
-
-        if (isUnmounted) return;
-
-        touchDiff.value = 0;
-        isRefreshing.value = false;
+        try {
+            await refreshingPromise;
+        } catch {
+            // Swallow queue-callback rejections so UI state still resets.
+        } finally {
+            refreshingPromise = null;
+            if (!isUnmounted) {
+                touchDiff.value = 0;
+                isRefreshing.value = false;
+            }
+        }
     }
 
     function waitForRefresh(): Promise<unknown> {

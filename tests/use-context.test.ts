@@ -194,6 +194,65 @@ describe('useProvide', () => {
         expect(ctx.queue.has(second)).toBe(true);
     });
 
+    it('resets refreshing state when a queue callback rejects', async () => {
+        const { api } = mountProvider({ pullDownThreshold: 10 });
+        const ctx = api();
+        const failingCb: TQueueCallback = vi.fn().mockRejectedValue(new Error('boom'));
+        ctx.queue.add(failingCb);
+
+        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchEndHandler();
+        await nextTick();
+        expect(ctx.isRefreshing.value).toBe(true);
+
+        await vi.advanceTimersByTimeAsync(ANIMATION_DURATION);
+        await nextTick();
+
+        expect(ctx.isRefreshing.value).toBe(false);
+        expect(ctx.topOffset.value).toBe(0);
+    });
+
+    it('allows a new pull after a failed refresh', async () => {
+        const { api } = mountProvider({ pullDownThreshold: 10 });
+        const ctx = api();
+        const failingCb: TQueueCallback = vi.fn().mockRejectedValue(new Error('boom'));
+        ctx.queue.add(failingCb);
+
+        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchEndHandler();
+        await nextTick();
+        await vi.advanceTimersByTimeAsync(ANIMATION_DURATION);
+        await nextTick();
+
+        ctx.queue.delete(failingCb);
+        const succeedingCb: TQueueCallback = vi.fn().mockResolvedValue(undefined);
+        ctx.queue.add(succeedingCb);
+
+        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchEndHandler();
+        await nextTick();
+
+        expect(succeedingCb).toHaveBeenCalledTimes(1);
+    });
+
+    it('waitForRefresh returns to idle after a rejected refresh', async () => {
+        const { api } = mountProvider({ pullDownThreshold: 10 });
+        const ctx = api();
+        ctx.queue.add(vi.fn().mockRejectedValue(new Error('boom')));
+
+        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchEndHandler();
+        await nextTick();
+        await vi.advanceTimersByTimeAsync(ANIMATION_DURATION);
+        await nextTick();
+
+        await expect(ctx.waitForRefresh()).resolves.toBeUndefined();
+    });
+
     it('clears queue on unmount', async () => {
         const cb: TQueueCallback = vi.fn().mockResolvedValue(undefined);
         const { wrapper, api } = mountProvider();
