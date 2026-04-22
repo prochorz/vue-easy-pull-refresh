@@ -5,6 +5,9 @@ export default defineConfig({
   title: "Vue Easy Pull Refresh",
   description: "Pull to refresh",
   base: '/vue-easy-pull-refresh/',
+  sitemap: {
+    hostname: 'https://prochorz.github.io/vue-easy-pull-refresh/'
+  },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
