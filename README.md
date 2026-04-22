@@ -1,5 +1,9 @@
 # VueEasyPullRefresh
 
+[![npm version](https://img.shields.io/npm/v/vue-easy-pull-refresh.svg)](https://www.npmjs.com/package/vue-easy-pull-refresh)
+[![npm downloads](https://img.shields.io/npm/dm/vue-easy-pull-refresh.svg)](https://www.npmjs.com/package/vue-easy-pull-refresh)
+[![license](https://img.shields.io/npm/l/vue-easy-pull-refresh.svg)](./LICENSE)
+
 Lightweight pull-to-refresh component for Vue 3. Works on both mobile (touch) and desktop (mouse). Bring-your-own loader, register async tasks from anywhere in the tree, and fine-tune the refresh animation.
 
 **[Live demo & full docs →](https://prochorz.github.io/vue-easy-pull-refresh/)**

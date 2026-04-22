@@ -2,10 +2,33 @@
   "name": "vue-easy-pull-refresh",
   "version": "1.4.0",
   "type": "module",
+  "description": "Lightweight Vue 3 pull-to-refresh component and composable with touch/mouse gesture support, async task queue, and zero dependencies.",
+  "keywords": [
+    "vue",
+    "vue3",
+    "vue-3",
+    "vue-component",
+    "composable",
+    "pull-to-refresh",
+    "pull-refresh",
+    "pulltorefresh",
+    "pull-down",
+    "refresh",
+    "reload",
+    "touch",
+    "gesture",
+    "swipe",
+    "mobile",
+    "scroll",
+    "typescript"
+  ],
   "homepage": "https://prochorz.github.io/vue-easy-pull-refresh/",
   "repository": {
     "type": "git",
     "url": "https://github.com/prochorz/vue-easy-pull-refresh"
+  },
+  "bugs": {
+    "url": "https://github.com/prochorz/vue-easy-pull-refresh/issues"
   },
   "license": "MIT",
   "files": [
