@@ -66,6 +66,7 @@ const props = withDefaults(defineProps<IPullRefreshProps>(), {
     isFreezeContent: false,
     isDisabled: false,
     pullDownThreshold: 64,
+    directionLockAngle: 30,
     initialQueue: undefined
 });
 

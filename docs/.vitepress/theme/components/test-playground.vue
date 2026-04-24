@@ -61,6 +61,31 @@
                 >
             </div>
 
+            <div class="playground__row playground__row--stack">
+                <div class="playground__row-head">
+                    <span>directionLockAngle</span>
+                    <code class="playground__value">{{ directionLockAngle }}°</code>
+                </div>
+                <input
+                    v-model.number="directionLockAngle"
+                    type="range"
+                    min="0"
+                    max="90"
+                    step="1"
+                >
+            </div>
+
+            <div class="playground__row">
+                <label class="playground__label">
+                    <input
+                        v-model="useHorizontalSwiper"
+                        type="checkbox"
+                    >
+                    <span>horizontal swiper inside</span>
+                </label>
+                <code class="playground__value">{{ useHorizontalSwiper }}</code>
+            </div>
+
             <div class="playground__row">
                 <label class="playground__label">
                     <input
@@ -111,11 +136,13 @@
                 :is-freeze-content="isFreezeContent"
                 :is-disabled="isDisabled"
                 :pull-down-threshold="pullDownThreshold"
+                :direction-lock-angle="directionLockAngle"
                 :initial-queue="hasInitialQueue ? initialQueueFn : undefined"
                 @reached="reachedCount++"
                 @settled="settledCount++"
             >
-                <DemoContent />
+                <DemoCarousel v-if="useHorizontalSwiper" />
+                <DemoContent v-else />
             </VueEasyPullRefresh>
         </div>
     </div>
@@ -125,12 +152,15 @@
 import { ref } from 'vue';
 
 import DemoContent from './demo-content.vue';
+import DemoCarousel from './demo-carousel.vue';
 
 const isRefreshContent = ref(true);
 const isAppearAnimation = ref(true);
 const isFreezeContent = ref(false);
 const isDisabled = ref(false);
 const pullDownThreshold = ref(64);
+const directionLockAngle = ref(30);
+const useHorizontalSwiper = ref(false);
 const hasInitialQueue = ref(false);
 const delay = ref(1500);
 
@@ -150,6 +180,8 @@ function reset() {
     isFreezeContent.value = false;
     isDisabled.value = false;
     pullDownThreshold.value = 64;
+    directionLockAngle.value = 30;
+    useHorizontalSwiper.value = false;
     hasInitialQueue.value = false;
     delay.value = 1500;
     reachedCount.value = 0;

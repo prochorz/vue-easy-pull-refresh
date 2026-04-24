@@ -40,7 +40,15 @@ interface IPullRefreshProps {
      * d&d height
      */
     pullDownThreshold?: number;
-  
+
+    /**
+     * Max angle (in degrees) from the vertical axis that still counts as a
+     * pull-down. Larger angles are treated as horizontal and ignored until
+     * the gesture ends — prevents nested carousels/tabs from triggering a
+     * refresh. Use 90 to disable the lock.
+     */
+    directionLockAngle?: number;
+
     /**
      * Initial Queue
      */

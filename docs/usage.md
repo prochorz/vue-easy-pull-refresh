@@ -28,6 +28,37 @@ The smallest possible usage. Pull down inside the preview — the timestamp and 
 
 ---
 
+## Nested horizontal swipers
+A `directionLockAngle` prop (default `30°`) keeps horizontal gestures (carousels, tabs, sliders) from triggering a pull. Swipe the strip horizontally — the loader stays hidden. Pull straight down on the background to refresh.
+
+Compare the default (`30°`) vs. a relaxed (`60°`) vs. disabled (`90°`) lock — the wider the angle, the more off-vertical a gesture can be before it still counts as a pull.
+
+<ClientOnly>
+    <DemoPair>
+        <DemoBox label="directionLockAngle = 30 (default)">
+            <DemoCarousel />
+        </DemoBox>
+        <DemoBox
+            label="directionLockAngle = 90 (disabled)"
+            :direction-lock-angle="90"
+        >
+            <DemoCarousel />
+        </DemoBox>
+    </DemoPair>
+</ClientOnly>
+
+::: details Show code
+```vue
+<template>
+    <VueEasyPullRefresh :direction-lock-angle="30">
+        <!-- carousels, tabs, horizontal sliders -->
+    </VueEasyPullRefresh>
+</template>
+```
+:::
+
+---
+
 ## `pullDownThreshold`
 Distance the user must pull before a refresh fires. Try both — the right one fires only after a longer drag.
 

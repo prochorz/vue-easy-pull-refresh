@@ -15,6 +15,7 @@ function mountProvider(props: IPullRefreshProps = {}) {
             isFreezeContent: Boolean,
             isDisabled: Boolean,
             pullDownThreshold: { type: Number, default: 0 },
+            directionLockAngle: Number,
             initialQueue: Function
         },
         setup(p) {
@@ -67,8 +68,90 @@ describe('useProvide', () => {
         const { api } = mountProvider({ pullDownThreshold: 100 });
         const ctx = api();
 
-        ctx.touchStartHandler({ touches: [{ clientY: 10 }] } as unknown as TouchEvent);
-        ctx.touchMoveHandler({ touches: [{ clientY: 60 }] } as unknown as TouchEvent);
+        ctx.touchStartHandler({ touches: [{ clientX: 0, clientY: 10 }] } as unknown as TouchEvent);
+        ctx.touchMoveHandler({ touches: [{ clientX: 0, clientY: 60 }] } as unknown as TouchEvent);
+
+        expect(ctx.topOffset.value).toBe(50);
+    });
+
+    it('ignores the pull when the gesture is mostly horizontal', () => {
+        const { api } = mountProvider({ pullDownThreshold: 100 });
+        const ctx = api();
+
+        // dy=20, dx=60 -> angle from vertical ~71° > 30°, treated as horizontal.
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 60, clientY: 20 } as MouseEvent);
+
+        expect(ctx.topOffset.value).toBe(0);
+    });
+
+    it('stays locked horizontally even after subsequent vertical travel', () => {
+        const { api } = mountProvider({ pullDownThreshold: 100 });
+        const ctx = api();
+
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 60, clientY: 20 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 60, clientY: 200 } as MouseEvent);
+
+        expect(ctx.topOffset.value).toBe(0);
+    });
+
+    it('allows the pull when the angle from the vertical is within 30°', () => {
+        const { api } = mountProvider({ pullDownThreshold: 200 });
+        const ctx = api();
+
+        // dy=100, dx=40 -> |dx|/|dy| = 0.4 < tan(30°) ≈ 0.577.
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 40, clientY: 100 } as MouseEvent);
+
+        expect(ctx.topOffset.value).toBe(100);
+    });
+
+    it('does not lock the direction before the movement threshold is crossed', () => {
+        const { api } = mountProvider({ pullDownThreshold: 100 });
+        const ctx = api();
+
+        // Tiny drift below the 5px threshold must not decide the direction.
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 3, clientY: 2 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 80 } as MouseEvent);
+
+        expect(ctx.topOffset.value).toBe(80);
+    });
+
+    it('widens the direction lock when directionLockAngle is increased', () => {
+        // dx=60, dy=40 -> ~56° from vertical: locked at default 30°, allowed at 60°.
+        const strict = mountProvider({ pullDownThreshold: 100 });
+        strict.api().touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        strict.api().touchMoveHandler({ clientX: 60, clientY: 40 } as MouseEvent);
+        expect(strict.api().topOffset.value).toBe(0);
+
+        const relaxed = mountProvider({ pullDownThreshold: 100, directionLockAngle: 60 });
+        relaxed.api().touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        relaxed.api().touchMoveHandler({ clientX: 60, clientY: 40 } as MouseEvent);
+        expect(relaxed.api().topOffset.value).toBe(40);
+    });
+
+    it('effectively disables the direction lock when directionLockAngle is 90', () => {
+        const { api } = mountProvider({ pullDownThreshold: 100, directionLockAngle: 90 });
+        const ctx = api();
+
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 200, clientY: 30 } as MouseEvent);
+
+        expect(ctx.topOffset.value).toBe(30);
+    });
+
+    it('resets the direction lock between gestures', () => {
+        const { api } = mountProvider({ pullDownThreshold: 100 });
+        const ctx = api();
+
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 60, clientY: 20 } as MouseEvent);
+        ctx.touchEndHandler();
+
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 50 } as MouseEvent);
 
         expect(ctx.topOffset.value).toBe(50);
     });
@@ -77,8 +160,8 @@ describe('useProvide', () => {
         const { api } = mountProvider({ pullDownThreshold: 40 });
         const ctx = api();
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 500 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 500 } as MouseEvent);
 
         expect(ctx.topOffset.value).toBe(40);
     });
@@ -87,8 +170,8 @@ describe('useProvide', () => {
         const { api } = mountProvider({ pullDownThreshold: 40 });
         const ctx = api();
 
-        ctx.touchStartHandler({ clientY: 100 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 100 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 50 } as MouseEvent);
 
         expect(ctx.topOffset.value).toBe(0);
     });
@@ -97,8 +180,8 @@ describe('useProvide', () => {
         const { api } = mountProvider({ pullDownThreshold: 100, isDisabled: true });
         const ctx = api();
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 80 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 80 } as MouseEvent);
 
         expect(ctx.topOffset.value).toBe(0);
     });
@@ -107,8 +190,8 @@ describe('useProvide', () => {
         const { api } = mountProvider({ pullDownThreshold: 100 });
         const ctx = api();
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 50 } as MouseEvent);
         ctx.touchEndHandler();
 
         expect(ctx.topOffset.value).toBe(0);
@@ -121,8 +204,8 @@ describe('useProvide', () => {
         const queueCb = vi.fn().mockResolvedValue(undefined);
         ctx.queue.add(queueCb);
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 100 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 100 } as MouseEvent);
         ctx.touchEndHandler();
 
         await nextTick();
@@ -139,8 +222,8 @@ describe('useProvide', () => {
         const { api } = mountProvider({ pullDownThreshold: 10 });
         const ctx = api();
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 50 } as MouseEvent);
         ctx.touchEndHandler();
         await nextTick();
 
@@ -166,14 +249,14 @@ describe('useProvide', () => {
         const { api } = mountProvider({ pullDownThreshold: 10 });
         const ctx = api();
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 20 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 20 } as MouseEvent);
         ctx.touchEndHandler();
         await nextTick();
         expect(ctx.isRefreshing.value).toBe(true);
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 100 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 100 } as MouseEvent);
         ctx.touchEndHandler();
 
         expect(ctx.topOffset.value).toBe(10);
@@ -200,8 +283,8 @@ describe('useProvide', () => {
         const failingCb: TQueueCallback = vi.fn().mockRejectedValue(new Error('boom'));
         ctx.queue.add(failingCb);
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 50 } as MouseEvent);
         ctx.touchEndHandler();
         await nextTick();
         expect(ctx.isRefreshing.value).toBe(true);
@@ -219,8 +302,8 @@ describe('useProvide', () => {
         const failingCb: TQueueCallback = vi.fn().mockRejectedValue(new Error('boom'));
         ctx.queue.add(failingCb);
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 50 } as MouseEvent);
         ctx.touchEndHandler();
         await nextTick();
         await vi.advanceTimersByTimeAsync(ANIMATION_DURATION);
@@ -230,8 +313,8 @@ describe('useProvide', () => {
         const succeedingCb: TQueueCallback = vi.fn().mockResolvedValue(undefined);
         ctx.queue.add(succeedingCb);
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 50 } as MouseEvent);
         ctx.touchEndHandler();
         await nextTick();
 
@@ -243,8 +326,8 @@ describe('useProvide', () => {
         const ctx = api();
         ctx.queue.add(vi.fn().mockRejectedValue(new Error('boom')));
 
-        ctx.touchStartHandler({ clientY: 0 } as MouseEvent);
-        ctx.touchMoveHandler({ clientY: 50 } as MouseEvent);
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 50 } as MouseEvent);
         ctx.touchEndHandler();
         await nextTick();
         await vi.advanceTimersByTimeAsync(ANIMATION_DURATION);

@@ -82,6 +82,13 @@ With `isFreezeContent` the user sees the old feed until the loader has fully rol
 
 ---
 
+### **`directionLockAngle`**
+- **Type**: `Number`
+- **Default**: `30`
+- **Description**: Max angle (in degrees) from the vertical axis that still counts as a pull-down. Larger angles are treated as horizontal and ignored until the gesture ends — this prevents nested carousels, tabs, and horizontal sliders from hijacking a refresh when the user drifts slightly downward. Set to `90` to disable the lock entirely.
+
+---
+
 ### **`initialQueue`**
 - **Type**: `Function returning Promise`
 - **Default**: `undefined`
