@@ -69,6 +69,29 @@ describe('VueEasyPullRefresh', () => {
         expect(wrapper.emitted('started')).toHaveLength(1);
     });
 
+    it('releases the pull on touchcancel', async () => {
+        const wrapper = mountRefresh({ pullDownThreshold: 80 });
+        const root = wrapper.find('div');
+
+        await root.trigger('touchstart', { touches: [{ clientX: 0, clientY: 0 }] });
+        await root.trigger('touchmove', { touches: [{ clientX: 0, clientY: 40 }] });
+        await nextTick();
+        expect(wrapper.find('[class*="loaderWrapper"]').exists()).toBe(true);
+
+        // The browser fires touchcancel instead of touchend when the gesture is
+        // interrupted (incoming call, system swipe). An unhandled cancel would
+        // strand the pull, so the loader would never start retracting and the
+        // max-height transition would never resolve into "settled".
+        await root.trigger('touchcancel');
+        await nextTick();
+
+        const loader = wrapper.find('[class*="loaderWrapper"]');
+        await loader.trigger('transitionend', { propertyName: 'max-height' });
+
+        expect(wrapper.emitted('settled')).toHaveLength(1);
+        expect(wrapper.emitted('reached')).toBeUndefined();
+    });
+
     it('emits "reached" when threshold is crossed', async () => {
         const wrapper = mountRefresh({ pullDownThreshold: 60 });
         const root = wrapper.find('div');

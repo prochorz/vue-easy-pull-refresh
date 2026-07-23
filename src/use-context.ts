@@ -103,12 +103,15 @@ function useProvide(props: Readonly<IPullRefreshProps>): IPullRefreshContext {
     }
 
     function touchEndHandler () {
-        if (isRefreshing.value || props.isDisabled) return;
+        if (isRefreshing.value) return;
 
+        // Always release the gesture, even while disabled — bailing out early
+        // would strand touchDiff at its last value and leave the content
+        // visibly offset until the next pull.
         isTouching.value = false;
         gestureLock = null;
 
-        if (isCanRefresh.value) {
+        if (!props.isDisabled && isCanRefresh.value) {
             refreshStart();
         } else {
             touchDiff.value = 0;

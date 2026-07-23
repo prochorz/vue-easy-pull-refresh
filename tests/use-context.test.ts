@@ -186,6 +186,34 @@ describe('useProvide', () => {
         expect(ctx.topOffset.value).toBe(0);
     });
 
+    it('releases the gesture when isDisabled is set mid-pull', async () => {
+        const { wrapper, api } = mountProvider({ pullDownThreshold: 100 });
+        const ctx = api();
+
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 40 } as MouseEvent);
+        expect(ctx.topOffset.value).toBe(40);
+
+        await wrapper.setProps({ isDisabled: true });
+        ctx.touchEndHandler();
+
+        expect(ctx.topOffset.value).toBe(0);
+    });
+
+    it('does not start a refresh on release while isDisabled', async () => {
+        const { wrapper, api } = mountProvider({ pullDownThreshold: 50 });
+        const ctx = api();
+
+        ctx.touchStartHandler({ clientX: 0, clientY: 0 } as MouseEvent);
+        ctx.touchMoveHandler({ clientX: 0, clientY: 200 } as MouseEvent);
+
+        await wrapper.setProps({ isDisabled: true });
+        ctx.touchEndHandler();
+
+        expect(ctx.isRefreshing.value).toBe(false);
+        expect(ctx.topOffset.value).toBe(0);
+    });
+
     it('resets topOffset on touchEnd below threshold', () => {
         const { api } = mountProvider({ pullDownThreshold: 100 });
         const ctx = api();

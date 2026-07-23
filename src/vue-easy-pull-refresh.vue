@@ -5,6 +5,7 @@
         @touchstart="readyTouchStartHandler"
         @touchmove="preventedTouchMoveHandler"
         @touchend="touchEndHandler"
+        @touchcancel="touchEndHandler"
         @mousedown="readyTouchStartHandler"
         @mouseup="touchEndHandler"
         @mouseleave="touchEndHandler"
