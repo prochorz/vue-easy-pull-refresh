@@ -234,6 +234,107 @@ describe('VueEasyPullRefresh', () => {
         });
     });
 
+    describe('scroll parent locking', () => {
+        // The component only learns about its scroll parents once the
+        // ResizeObserver fires, so drive it explicitly here.
+        let notify: (() => void) | null = null;
+
+        beforeEach(() => {
+            notify = null;
+            vi.stubGlobal('ResizeObserver', class {
+                constructor(cb: () => void) {
+                    notify = cb;
+                }
+                observe() {}
+                unobserve() {}
+                disconnect() {}
+            });
+        });
+
+        afterEach(() => {
+            vi.unstubAllGlobals();
+            document.body.innerHTML = '';
+        });
+
+        function createScrollParent(inlineOverflow?: string) {
+            const parent = document.createElement('div');
+            if (inlineOverflow) {
+                // hasScrollbar() accepts overflow-y: auto only when the content
+                // actually overflows.
+                parent.style.overflow = inlineOverflow;
+                parent.style.overflowY = inlineOverflow;
+                Object.defineProperty(parent, 'scrollHeight', { value: 500, configurable: true });
+                Object.defineProperty(parent, 'clientHeight', { value: 100, configurable: true });
+            } else {
+                parent.style.overflowY = 'scroll';
+            }
+            document.body.appendChild(parent);
+            return parent;
+        }
+
+        async function mountInside(parent: HTMLElement) {
+            const host = document.createElement('div');
+            parent.appendChild(host);
+
+            const wrapper = mountRefresh({ pullDownThreshold: 80 }, { attachTo: host });
+            // The observer is created by the refEl watcher, which only flushes
+            // after mount.
+            await nextTick();
+            // The height watcher is what triggers the scroll-parent lookup, so
+            // it has to see a real change off the initial 0.
+            Object.defineProperty(wrapper.element, 'clientHeight', { value: 500, configurable: true });
+            notify?.();
+            await vi.advanceTimersByTimeAsync(200);
+            await nextTick();
+            return wrapper;
+        }
+
+        it('locks the scroll parent during a pull and releases it after', async () => {
+            const parent = createScrollParent();
+            const wrapper = await mountInside(parent);
+            const root = wrapper.find('div');
+
+            await root.trigger('mousedown', { clientY: 0 });
+            await root.trigger('mousemove', { clientY: 40 });
+            await nextTick();
+            expect(parent.style.overflow).toBe('hidden');
+
+            await root.trigger('mouseup');
+            await nextTick();
+            expect(parent.style.overflow).toBe('');
+        });
+
+        it('restores an inline overflow the host app set itself', async () => {
+            const parent = createScrollParent('auto');
+            const wrapper = await mountInside(parent);
+            const root = wrapper.find('div');
+
+            await root.trigger('mousedown', { clientY: 0 });
+            await root.trigger('mousemove', { clientY: 40 });
+            await nextTick();
+            expect(parent.style.overflow).toBe('hidden');
+
+            await root.trigger('mouseup');
+            await nextTick();
+            expect(parent.style.overflow).toBe('auto');
+        });
+
+        it('releases the scroll parent when unmounted mid-pull', async () => {
+            const parent = createScrollParent();
+            const wrapper = await mountInside(parent);
+            const root = wrapper.find('div');
+
+            await root.trigger('mousedown', { clientY: 0 });
+            await root.trigger('mousemove', { clientY: 40 });
+            await nextTick();
+            expect(parent.style.overflow).toBe('hidden');
+
+            wrapper.unmount();
+            await nextTick();
+            expect(parent.style.overflow).toBe('');
+        });
+    });
+
     it('exposes queue through template ref', () => {
         const wrapper = mountRefresh();
         const exposed = wrapper.vm as unknown as { queue: Set<unknown> };

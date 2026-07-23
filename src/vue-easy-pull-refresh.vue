@@ -44,7 +44,8 @@ import {
     nextTick,
     shallowRef,
     withDefaults,
-    useCssModule
+    useCssModule,
+    onBeforeUnmount
 } from 'vue';
 
 import {
@@ -90,6 +91,11 @@ const classes = useCssModule();
 const { refEl, height } = useResizeObserver();
 
 let scrollParents: HTMLElement[] = [];
+
+// Scroll parents whose inline overflow we overrode, mapped to their previous
+// inline value. Restoring from this map keeps the component from wiping an
+// overflow the host app set itself, and lets unmount clean up mid-pull.
+const lockedParents = new Map<HTMLElement, string>();
 
 let keyCounter = 0;
 const uniqKey = shallowRef(0);
@@ -162,17 +168,31 @@ function updateScrollParents() {
     scrollParents = getScrollParents(refEl.value);
 }
 
-function preventScrollParents() {
-    if (scrollParents.length) {
-        const stopScrolling = topOffset.value && !isRefreshing.value;
+function lockScrollParents() {
+    scrollParents.forEach(p => {
+        if (!lockedParents.has(p)) {
+            lockedParents.set(p, p.style.overflow);
+            p.style.overflow = 'hidden';
+        }
+    });
+}
 
-        scrollParents.forEach(p => {
-            if (stopScrolling) {
-                p.style.overflow = 'hidden';
-            } else {
-                p.style.removeProperty('overflow');
-            }
-        });
+function releaseScrollParents() {
+    lockedParents.forEach((previous, p) => {
+        if (previous) {
+            p.style.overflow = previous;
+        } else {
+            p.style.removeProperty('overflow');
+        }
+    });
+    lockedParents.clear();
+}
+
+function preventScrollParents() {
+    if (topOffset.value && !isRefreshing.value) {
+        lockScrollParents();
+    } else {
+        releaseScrollParents();
     }
 }
 
@@ -221,6 +241,10 @@ function topOffsetUpdate(newVal: number, oldVal: number) {
         emit('reached');
     }
 }
+
+// Unmounting mid-pull would otherwise leave the scroll parents stuck at
+// overflow: hidden, breaking scrolling for the rest of the page.
+onBeforeUnmount(releaseScrollParents);
 
 watch(isRefreshing, updateKey);
 watch(topOffset, topOffsetUpdate);
