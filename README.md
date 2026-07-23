@@ -57,6 +57,7 @@ import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 
 | Event     | Payload | Description |
 |-----------|---------|-------------|
+| `started` | —       | Emitted when the pull-down gesture begins, as soon as the content starts moving. Fires before `pullDownThreshold` is reached. |
 | `reached` | —       | Emitted when the pull-down gesture reaches `pullDownThreshold` and the refresh starts. |
 | `settled` | —       | Emitted when the refresh animation finishes and the component returns to its idle state. |
 

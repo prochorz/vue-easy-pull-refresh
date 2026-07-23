@@ -96,6 +96,13 @@ With `isFreezeContent` the user sees the old feed until the loader has fully rol
 
 ## Events
 
+### **`started`**
+- **Type**: `Event`
+- **Description**: This event is emitted as soon as the pull-down gesture starts moving the content, before `pullDownThreshold` is reached. Useful for reacting to the very beginning of the interaction — dimming a header, pausing a carousel, or showing a hint.
+```ts
+(e: 'started'): void:
+```
+
 ### **`reached`**
 - **Type**: `Event`
 - **Description**: This event is emitted when the pull-to-refresh gesture reaches the defined threshold and triggers the refresh action. It can be used to perform additional actions after the refresh process is completed.
@@ -113,6 +120,7 @@ With `isFreezeContent` the user sees the old feed until the loader has fully rol
 ### Example Usage:
 ```vue
 <VuePullToRefresh
+   @started="handleStart"
    @reached="handleRefresh"
    @settled="handleSettled"
 />

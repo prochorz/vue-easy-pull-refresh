@@ -44,6 +44,31 @@ describe('VueEasyPullRefresh', () => {
         expect(wrapper.find('[class*="loaderWrapper"]').exists()).toBe(true);
     });
 
+    it('emits "started" as soon as the content starts moving', async () => {
+        const wrapper = mountRefresh({ pullDownThreshold: 80 });
+        const root = wrapper.find('div');
+
+        await root.trigger('mousedown', { clientY: 0 });
+        await root.trigger('mousemove', { clientY: 20 });
+        await nextTick();
+
+        expect(wrapper.emitted('started')).toHaveLength(1);
+        expect(wrapper.emitted('reached')).toBeUndefined();
+    });
+
+    it('emits "started" only once per pull', async () => {
+        const wrapper = mountRefresh({ pullDownThreshold: 80 });
+        const root = wrapper.find('div');
+
+        await root.trigger('mousedown', { clientY: 0 });
+        await root.trigger('mousemove', { clientY: 20 });
+        await root.trigger('mousemove', { clientY: 40 });
+        await root.trigger('mousemove', { clientY: 60 });
+        await nextTick();
+
+        expect(wrapper.emitted('started')).toHaveLength(1);
+    });
+
     it('emits "reached" when threshold is crossed', async () => {
         const wrapper = mountRefresh({ pullDownThreshold: 60 });
         const root = wrapper.find('div');

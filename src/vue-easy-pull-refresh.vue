@@ -71,6 +71,7 @@ const props = withDefaults(defineProps<IPullRefreshProps>(), {
 });
 
 const emit = defineEmits({
+    started: () => true,
     settled: () => true,
     reached: () => true
 });
@@ -204,6 +205,13 @@ function loaderEndHandler(e: TransitionEvent) {
     
 function topOffsetUpdate(newVal: number, oldVal: number) {
     isGoingUp.value = newVal < oldVal;
+
+    if (!oldVal && newVal) {
+        /**
+         * Emitted when the pull-to-refresh gesture is initiated by the user.
+         */
+        emit('started');
+    }
 
     if (topOffset.value === props.pullDownThreshold) {
         /**

@@ -114,7 +114,7 @@
 
             <div class="playground__row playground__events">
                 <span class="playground__label">Events</span>
-                <code class="playground__value">reached: {{ reachedCount }} / settled: {{ settledCount }}</code>
+                <code class="playground__value">started: {{ startedCount }} / reached: {{ reachedCount }} / settled: {{ settledCount }}</code>
             </div>
 
             <button
@@ -138,6 +138,7 @@
                 :pull-down-threshold="pullDownThreshold"
                 :direction-lock-angle="directionLockAngle"
                 :initial-queue="hasInitialQueue ? initialQueueFn : undefined"
+                @started="startedCount++"
                 @reached="reachedCount++"
                 @settled="settledCount++"
             >
@@ -164,6 +165,7 @@ const useHorizontalSwiper = ref(false);
 const hasInitialQueue = ref(false);
 const delay = ref(1500);
 
+const startedCount = ref(0);
 const reachedCount = ref(0);
 const settledCount = ref(0);
 const resetKey = ref(0);
@@ -184,6 +186,7 @@ function reset() {
     useHorizontalSwiper.value = false;
     hasInitialQueue.value = false;
     delay.value = 1500;
+    startedCount.value = 0;
     reachedCount.value = 0;
     settledCount.value = 0;
     resetKey.value++;

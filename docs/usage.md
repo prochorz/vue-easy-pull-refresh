@@ -1,7 +1,7 @@
 # Usage
 
 ## Playground
-Interactive sandbox for `VueEasyPullRefresh`. Toggle any prop on the left and pull down inside the preview on the right to see the result. Event counters show how many times `reached` and `settled` have fired.
+Interactive sandbox for `VueEasyPullRefresh`. Toggle any prop on the left and pull down inside the preview on the right to see the result. Event counters show how many times `started`, `reached` and `settled` have fired.
 
 <ClientOnly>
     <TestPlayground />
