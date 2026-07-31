@@ -31,7 +31,7 @@ The smallest possible usage. Pull down inside the preview — the timestamp and 
 ## Nested horizontal swipers
 A `directionLockAngle` prop (default `30°`) keeps horizontal gestures (carousels, tabs, sliders) from triggering a pull. Swipe the strip horizontally — the loader stays hidden. Pull straight down on the background to refresh.
 
-Compare the default (`30°`) vs. a relaxed (`60°`) vs. disabled (`90°`) lock — the wider the angle, the more off-vertical a gesture can be before it still counts as a pull.
+Compare the default (`30°`) lock vs. disabled (`90°`) — the wider the angle, the more off-vertical a gesture can be before it still counts as a pull.
 
 <ClientOnly>
     <DemoPair>
@@ -288,7 +288,7 @@ Callbacks registered this way are automatically removed when their component unm
 
 ## Deprecated: ref-based controlled refresh
 ::: warning Deprecated
-This approach is deprecated starting from version 1.1.3. Use the [`initialQueue`](#initialqueue) prop or [queue from a child component](#queue-from-a-child-component) instead.
+This approach is deprecated since v1.1.0. Use the [`initialQueue`](#initialqueue) prop or [queue from a child component](#queue-from-a-child-component) instead.
 :::
 
 Older versions exposed the queue through a template ref. It still works but new code should prefer the patterns above.

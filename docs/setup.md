@@ -1,6 +1,6 @@
 # **Setup**
 
-The **`useEasyPullRefresh`** function and the **`VueEasyPullRefresh`** component are designed to be used together in your Vue3 project to provide an easy-to-use pull-to-refresh experience. Follow the steps below to integrate them into your Vue components.
+The **`VueEasyPullRefresh`** component wraps your content and handles the pull gesture. Optionally, use the **`useEasyPullRefresh`** composable in descendant components to register async refresh tasks. Follow the steps below to integrate them into your Vue project.
 
 ## **Installation**
 
@@ -16,13 +16,26 @@ npm install vue-easy-pull-refresh
 
 ## Basic Setup
 
-Once the library is installed, you can start using it in your Vue components.
+Once the library is installed, wrap your content with `VueEasyPullRefresh`:
 
-### Importing `VueEasyPullRefresh` and `useEasyPullRefresh`
-
-In your component, import both the `VueEasyPullRefresh` component and the `useEasyPullRefresh` function from the library:
 ```vue
+<template>
+    <VueEasyPullRefresh>
+        <YourContent />
+    </VueEasyPullRefresh>
+</template>
+
 <script setup>
-import { VueEasyPullRefresh, useEasyPullRefresh } from 'vue-easy-pull-refresh';
+import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 </script>
 ```
+
+Need to fetch data on refresh? Pass an async callback via `initial-queue`:
+
+```vue
+<VueEasyPullRefresh :initial-queue="loadData">
+    <YourContent />
+</VueEasyPullRefresh>
+```
+
+For multiple tasks from child components, import `useEasyPullRefresh` in those descendants — see [Composables](/composables).

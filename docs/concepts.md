@@ -10,45 +10,50 @@ In this section, we will dive into the core concepts and features of `VueEasyPul
 
 #### **How it Works:**
 
-- When the user pulls down the content, the component listens for the touch/mouse events and initiates the refresh process.
-- It emits an event once the refresh action is triggered, allowing you to perform tasks like data fetching or state updates.
+- When the user pulls down the content, the component listens for touch/mouse events and moves the content with the gesture.
+- It emits three lifecycle events — `started` (gesture begins), `reached` (threshold hit during the drag), and `settled` (animation finished, idle again).
 - It can be customized with various props and slots to match the design and functionality of your application.
 
 ### 2. **`useEasyPullRefresh` Function**
 
-The `useEasyPullRefresh` function is a composition API function that allows you to interact with the pull-to-refresh logic inside the `setup` function. It provides the tools needed to add tasks to the refresh queue and control the refresh behavior programmatically.
+The `useEasyPullRefresh` function is a composition API helper for registering async tasks on the refresh queue. Call it inside **descendant** components of `<VueEasyPullRefresh>` — the composable picks up the queue via Vue's provide/inject.
 
 #### **How it Works:**
 
-- **`pullDownQueueAdd`**: This function is used to add asynchronous tasks (e.g., data fetching, state updates) to the pull-to-refresh queue. These tasks will be executed in order when the pull-to-refresh gesture is performed.
-- **`refRefresh`**: This reference allows you to access the `VueEasyPullRefresh` component directly. It is optional and only required if you need to interact with the component in the same component where it is defined.
+- **`pullDownQueueAdd`**: Adds an async callback to the refresh queue. Callbacks registered in child components are automatically removed when that component unmounts.
+- For a single task in the parent component, prefer the [`initialQueue`](/component#initialqueue) prop instead of the composable.
+
+::: warning Deprecated
+The **`refRefresh`** template ref and calling `pullDownQueueAdd` in the same component as `<VueEasyPullRefresh>` are deprecated since v1.1.0. Use [`initialQueue`](/component#initialqueue) or register tasks from child components. See [Usage → Deprecated](/usage#deprecated-ref-based-controlled-refresh).
+:::
 
 ### 3. **Queue System**
 
-One of the powerful features of `useEasyPullRefresh` is the ability to queue multiple asynchronous tasks during the pull-to-refresh process. The tasks are executed sequentially, ensuring that the refresh operation does not finish until all tasks have been completed.
+One of the powerful features of `useEasyPullRefresh` is the ability to queue multiple asynchronous tasks during the pull-to-refresh process. All tasks run **in parallel**; the loader stays visible until the slowest one resolves.
 
 #### **How it Works:**
 
-- When the pull-to-refresh gesture is triggered, all tasks in the queue are executed.
-- The queue ensures that tasks are not skipped, and each task will be given time to complete.
-- If a task takes too long, the refresh will keep waiting until the task is either resolved or rejected.
+- When the pull-to-refresh gesture is triggered, every callback in the queue is started at once.
+- The refresh does not finish until all tasks have resolved (or the minimum loader animation has elapsed).
+- If a task rejects, the error is swallowed so the UI still resets to its idle state.
 
-### 4. **Controlled vs. Uncontrolled Refresh**
+### 4. **Content refresh modes**
 
-The `VueEasyPullRefresh` component supports both controlled and uncontrolled behaviors:
+The component supports two ways to update content after a pull:
 
-- **Uncontrolled**: In the default, uncontrolled mode, the component automatically handles the refresh process. The content is re-rendered when the pull-to-refresh action is triggered.
-- **Controlled**: The component gives you more control over the refresh process. This mode allows you to manually manage when the refresh process ends, providing more flexibility when integrating with asynchronous operations or complex workflows.
+- **Re-mount (default)**: With `isRefreshContent` set to `true`, the default slot is re-keyed on each refresh so child components re-mount. Pair with `isAppearAnimation` and `isFreezeContent` to control the transition timing.
+- **In-place update**: With `isRefreshContent` set to `false`, the slot stays mounted and you update data yourself via `initialQueue` or `pullDownQueueAdd` in descendants.
 
 ## **Refresh Process Overview**
 
-1. **User Interaction**: The user performs a pull-to-refresh gesture (usually a downward swipe).
-2. **Trigger Refresh**: The component detects the gesture and triggers the refresh process.
-3. **Task Queue Execution**: Any tasks that have been added to the refresh queue using `pullDownQueueAdd` are executed.
-4. **Completion**: Once all tasks in the queue are completed, the refresh operation ends, and the content is updated.
+1. **User Interaction**: The user performs a pull-to-refresh gesture (downward swipe or mouse drag).
+2. **`started`**: The component detects movement and emits `started`.
+3. **`reached`**: When the drag hits `pullDownThreshold`, `reached` is emitted (still during the gesture).
+4. **Task Queue Execution**: On release past the threshold, the refresh starts and all queued callbacks run in parallel.
+5. **`settled`**: After every task finishes and the loader animation completes, `settled` is emitted and the component returns to idle.
 
 ## **Conclusion**
 
-The main concepts of `VueEasyPullRefresh` revolve around simplifying the implementation of pull-to-refresh functionality and allowing flexibility in how refresh tasks are managed. Whether you're using the default uncontrolled behavior or the more flexible controlled mode, the library provides a seamless solution for adding pull-to-refresh to your Vue application.
+The main concepts of `VueEasyPullRefresh` revolve around simplifying pull-to-refresh while keeping flexibility in how refresh tasks are registered — a single `initialQueue` prop for simple cases, or `pullDownQueueAdd` from any descendant for more complex trees.
 
 By understanding the core concepts, you can easily integrate and customize the pull-to-refresh experience in your project.

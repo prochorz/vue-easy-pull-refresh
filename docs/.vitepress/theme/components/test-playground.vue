@@ -112,9 +112,13 @@
                 >
             </div>
 
-            <div class="playground__row playground__events">
-                <span class="playground__label">Events</span>
-                <code class="playground__value">started: {{ startedCount }} / reached: {{ reachedCount }} / settled: {{ settledCount }}</code>
+            <div class="playground__row playground__row--stack playground__events">
+                <span>Events</span>
+                <div class="playground__event-counters">
+                    <code class="playground__value">started: {{ startedCount }}</code>
+                    <code class="playground__value">reached: {{ reachedCount }}</code>
+                    <code class="playground__value">settled: {{ settledCount }}</code>
+                </div>
             </div>
 
             <button
@@ -267,6 +271,12 @@ function reset() {
         margin-top: 4px;
         padding-top: 8px;
         border-top: 1px dashed var(--vp-c-divider);
+    }
+
+    .playground__event-counters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
     }
 
     .playground__reset {

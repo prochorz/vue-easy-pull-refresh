@@ -51,6 +51,7 @@ import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 | `isFreezeContent`     | `Boolean`                      | `false`     | Defer the content swap animation until the loader is fully hidden (until `settled`). Only applicable when `isRefreshContent` is `true`. |
 | `isDisabled`          | `Boolean`                      | `false`     | Turn the gesture off entirely — no pull, no loader, no refresh. |
 | `pullDownThreshold`   | `Number`                       | `64`        | Distance (px) the user has to pull before a refresh fires. |
+| `directionLockAngle`  | `Number`                       | `30`        | Max angle (degrees) from vertical that still counts as a pull-down. Larger angles are treated as horizontal — useful when nested carousels or tabs would otherwise trigger a refresh. Set to `90` to disable. |
 | `initialQueue`        | `() => Promise<unknown>`       | `undefined` | Async callback that runs on every refresh. Useful when you only have a single task and don't want to wire `useEasyPullRefresh` inside a child. |
 
 ## Events

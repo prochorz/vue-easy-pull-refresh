@@ -1,35 +1,40 @@
 # **`useEasyPullRefresh`**
 
-`useEasyPullRefresh` is a custom Vue composition function designed to simplify the integration of pull-to-refresh functionality. It provides methods and reactive states to help you manage the refresh process, queue asynchronous tasks, and handle the pull-to-refresh lifecycle.
+`useEasyPullRefresh` is a Vue composable for registering async tasks on the pull-to-refresh queue. Call it inside **descendant** components of `<VueEasyPullRefresh>` — the queue is shared via provide/inject.
+
+For a single refresh callback in the parent component, use the [`initialQueue`](/component#initialqueue) prop instead.
 
 ## **Usage**
 
-You can use the `useEasyPullRefresh` function in the `setup` function of your Vue component. If you're interacting with the `<VueEasyPullRefresh>` component within the same component, `refRefresh` is available for direct manipulation of the component.
+Register one or more async callbacks from a child component. Each callback is automatically removed when that component unmounts.
 
-### Example Usage:
+### Example:
 ```vue
+<!-- Parent.vue -->
+<template>
+    <VueEasyPullRefresh :is-refresh-content="false">
+        <FeedList />
+    </VueEasyPullRefresh>
+</template>
+
+<!-- FeedList.vue -->
 <script setup>
 import { useEasyPullRefresh } from 'vue-easy-pull-refresh';
 
 const { pullDownQueueAdd } = useEasyPullRefresh();
 
-// Adding a custom refresh task
-const myRefreshTask = async () => {
-  // Simulate an async task
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  console.log('Task completed!');
-};
-
-pullDownQueueAdd(myRefreshTask);
+pullDownQueueAdd(async () => {
+    await fetch('/api/feed').then(r => r.json());
+});
 </script>
 ```
 
 ## Return Values
 
-### **`refRefresh`** (optional)
-- **Type**: `Ref<HTMLElement | undefined>`
-- **Description**: A reference to the `<VueEasyPullRefresh>` component. This is optional and only needed if you're interacting with the component's DOM or accessing its internal methods directly within the same component.
-
 ### **`pullDownQueueAdd`**
-- **Type**: `Function`
-- **Description**: A method that allows you to add an asynchronous callback function to the refresh queue. This is useful when you need to queue up multiple tasks (e.g., network requests) that must complete before the refresh is considered finished.
+- **Type**: `(callback: () => Promise<unknown>) => void`
+- **Description**: Adds an async callback to the refresh queue. Must be called inside a descendant of `<VueEasyPullRefresh>`. Multiple callbacks run in parallel; the loader waits for the slowest one.
+
+### **`refRefresh`** (deprecated)
+- **Type**: `Ref<ComponentPublicInstance | null>`
+- **Description**: Template ref for the deprecated ref-based queue access. Do not use in new code — prefer [`initialQueue`](/component#initialqueue) or `pullDownQueueAdd` from a child component. Deprecated since v1.1.0.

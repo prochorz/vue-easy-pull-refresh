@@ -1,7 +1,7 @@
 # **`<VueEasyPullRefresh>`**
 
 ## Template structure
-This is the simplify template of the `<VueEasyPullRefresh>`. It will be helpful for understanding the naming of [props](#props).
+This is the simplified template of the `<VueEasyPullRefresh>`. It will be helpful for understanding the naming of [props](#props).
 
 ```vue
 <template>
@@ -45,17 +45,20 @@ This is the simplify template of the `<VueEasyPullRefresh>`. It will be helpful 
 
 ```vue
 <script setup>
-import { VueEasyPullRefresh, useEasyPullRefresh } from 'vue-easy-pull-refresh';
+import { VueEasyPullRefresh } from 'vue-easy-pull-refresh';
 
-const { pullDownQueueAdd } = useEasyPullRefresh();
+function loadFeed() {
+    return fetch('/api/feed').then(r => r.json());
+}
 
-pullDownQueueAdd(async () => {
-    await fetch('/api/feed').then(r => r.json());
-});
+function onSettled() {
+    // UI is idle again — safe to focus an element, resume a video, etc.
+}
 </script>
 
 <template>
     <VueEasyPullRefresh
+        :initial-queue="loadFeed"
         :is-freeze-content="true"
         @settled="onSettled"
     >
@@ -92,36 +95,33 @@ With `isFreezeContent` the user sees the old feed until the loader has fully rol
 ### **`initialQueue`**
 - **Type**: `Function returning Promise`
 - **Default**: `undefined`
-- **Description**: Pass the first request in the queue as a prop to execute when pull-to-refresh is triggered. This function will be called automatically during the refresh action.
+- **Description**: Async callback that runs on every refresh. The loader stays visible until the promise resolves. Use this when you have a single task in the parent component instead of wiring `useEasyPullRefresh` in a child.
 
 ## Events
 
 ### **`started`**
-- **Type**: `Event`
-- **Description**: This event is emitted as soon as the pull-down gesture starts moving the content, before `pullDownThreshold` is reached. Useful for reacting to the very beginning of the interaction — dimming a header, pausing a carousel, or showing a hint.
+- **Description**: Emitted as soon as the pull-down gesture starts moving the content, before `pullDownThreshold` is reached. Useful for reacting to the very beginning of the interaction — dimming a header, pausing a carousel, or showing a hint.
 ```ts
-(e: 'started'): void:
+(e: 'started') => void
 ```
 
 ### **`reached`**
-- **Type**: `Event`
-- **Description**: This event is emitted when the pull-to-refresh gesture reaches the defined threshold and triggers the refresh action. It can be used to perform additional actions after the refresh process is completed.
+- **Description**: Emitted when the pull-down gesture reaches `pullDownThreshold` and the refresh starts. Fires before queued tasks begin — use `settled` when you need to react after everything is done.
 ```ts
-(e: 'reached'): void:
+(e: 'reached') => void
 ```
 
 ### **`settled`**
-- **Type**: `Event`
-- **Description**: This event is emitted when the refresh animation is fully completed and the component has returned to its idle state. Useful for triggering actions that require the UI to be stable again.
+- **Description**: Emitted when the refresh animation is fully completed and the component has returned to its idle state. Useful for triggering actions that require the UI to be stable again.
 ```ts
-(e: 'settled'): void:
+(e: 'settled') => void
 ```
 
 ### Example Usage:
 ```vue
-<VuePullToRefresh
+<VueEasyPullRefresh
    @started="handleStart"
-   @reached="handleRefresh"
+   @reached="handleReached"
    @settled="handleSettled"
 />
 ```
@@ -133,6 +133,3 @@ With `isFreezeContent` the user sees the old feed until the loader has fully rol
 
 ### **`loader`** (optional)
 - **Description**: The loader slot allows you to customize the loading indicator that appears when the content is being refreshed. If no custom loader is provided, the default loader will be used.
-
-
-
